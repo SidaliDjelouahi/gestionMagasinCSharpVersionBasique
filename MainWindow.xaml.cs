@@ -71,4 +71,10 @@ private void SeedDatabase()
             
         }
     }
+
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        txtUsername.Focus();
+        Keyboard.Focus(txtUsername);
+    }
 }
