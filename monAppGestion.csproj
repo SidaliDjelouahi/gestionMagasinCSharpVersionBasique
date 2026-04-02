@@ -18,4 +18,10 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
   </ItemGroup>
 
+  <!-- Exclude helper/utility projects placed under the repository to avoid being compiled into the WPF app -->
+  <ItemGroup>
+    <Compile Remove="querydb\**\*.cs" />
+    <Compile Remove="dbinspect\**\*.cs" />
+  </ItemGroup>
+
 </Project>

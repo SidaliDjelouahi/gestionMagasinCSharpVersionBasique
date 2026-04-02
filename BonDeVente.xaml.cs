@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using MonAppGestion.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MonAppGestion
 {
@@ -85,19 +86,12 @@ namespace MonAppGestion
 
                     foreach (var l in _lines)
                     {
-                        var detail = new VenteDetail
-                        {
-                            IdVente = vente.Id,
-                            IdProduit = l.IdProduit,
-                            PrixVente = l.PrixVente,
-                            Qte = l.Qte
-                        };
-                        db.VenteDetails.Add(detail);
+                        // Use raw SQL insert to avoid EF mapping issues in this environment
+                        db.Database.ExecuteSqlInterpolated($"INSERT INTO VenteDetails (IdVente, IdProduit, PrixVente, Qte) VALUES ({vente.Id}, {l.IdProduit}, {l.PrixVente}, {l.Qte});");
                     }
-                    db.SaveChanges();
 
                     // Read back saved details to confirm
-                    var saved = db.VenteDetails.Where(d => d.IdVente == vente.Id).ToList();
+                    var saved = db.VenteDetails.Where(d => d.VenteId == vente.Id).ToList();
                     MessageBox.Show($"Bon de vente enregistré. Lignes sauvegardées : {saved.Count}");
                 }
             }
@@ -115,7 +109,7 @@ namespace MonAppGestion
         private class TempDetail
         {
             public int IdProduit { get; set; }
-            public string Nom { get; set; }
+            public string Nom { get; set; } = string.Empty;
             public decimal PrixVente { get; set; }
             public int Qte { get; set; }
         }
