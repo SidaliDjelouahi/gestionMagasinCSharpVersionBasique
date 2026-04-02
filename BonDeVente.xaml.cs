@@ -352,13 +352,57 @@ namespace MonAppGestion
             dpDateVente.SelectedDate = null;
         }
 
-        private class TempDetail
+        private class TempDetail : INotifyPropertyChanged
         {
-            public int IdProduit { get; set; }
-            public string Nom { get; set; } = string.Empty;
-            public decimal PrixVente { get; set; }
-            public int Qte { get; set; }
+            private int _idProduit;
+            private string _nom = string.Empty;
+            private decimal _prixVente;
+            private int _qte;
+
+            public int IdProduit
+            {
+                get => _idProduit;
+                set { if (_idProduit != value) { _idProduit = value; OnPropertyChanged(nameof(IdProduit)); } }
+            }
+
+            public string Nom
+            {
+                get => _nom;
+                set { if (_nom != value) { _nom = value; OnPropertyChanged(nameof(Nom)); } }
+            }
+
+            public decimal PrixVente
+            {
+                get => _prixVente;
+                set
+                {
+                    if (_prixVente != value)
+                    {
+                        _prixVente = value;
+                        OnPropertyChanged(nameof(PrixVente));
+                        OnPropertyChanged(nameof(Total));
+                    }
+                }
+            }
+
+            public int Qte
+            {
+                get => _qte;
+                set
+                {
+                    if (_qte != value)
+                    {
+                        _qte = value;
+                        OnPropertyChanged(nameof(Qte));
+                        OnPropertyChanged(nameof(Total));
+                    }
+                }
+            }
+
             public decimal Total => PrixVente * Qte;
+
+            public event PropertyChangedEventHandler? PropertyChanged;
+            private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
