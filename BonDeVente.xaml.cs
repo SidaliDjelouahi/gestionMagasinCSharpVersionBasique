@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using MonAppGestion.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +17,19 @@ namespace MonAppGestion
         {
             InitializeComponent();
             ChargerProduits();
+            dpDateVente.SelectedDate = DateTime.Today;
             RefreshDetailsGrid();
+        }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                dpDateVente.SelectedDate = DateTime.Today;
+                cbProducts.Focus();
+                Keyboard.Focus(cbProducts);
+            }
+            catch { }
         }
 
         private void ChargerProduits()

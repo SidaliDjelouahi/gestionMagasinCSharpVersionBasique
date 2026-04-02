@@ -2,7 +2,9 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="BonDeVente"
-      Background="White">
+    Background="White"
+    Loaded="Page_Loaded"
+    FocusManager.FocusedElement="{Binding ElementName=cbProducts}">
     <Grid Margin="12">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" />
