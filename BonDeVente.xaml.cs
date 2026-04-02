@@ -71,31 +71,41 @@ namespace MonAppGestion
                 return;
             }
 
-            using (var db = new AppDbContext())
+            try
             {
-                var vente = new Vente
+                using (var db = new AppDbContext())
                 {
-                    NumVente = txtNumVente.Text,
-                    Date = dpDateVente.SelectedDate.Value
-                };
-                db.Ventes.Add(vente);
-                db.SaveChanges();
-
-                foreach (var l in _lines)
-                {
-                    var detail = new VenteDetail
+                    var vente = new Vente
                     {
-                        IdVente = vente.Id,
-                        IdProduit = l.IdProduit,
-                        PrixVente = l.PrixVente,
-                        Qte = l.Qte
+                        NumVente = txtNumVente.Text,
+                        Date = dpDateVente.SelectedDate.Value
                     };
-                    db.VenteDetails.Add(detail);
-                }
-                db.SaveChanges();
-            }
+                    db.Ventes.Add(vente);
+                    db.SaveChanges();
 
-            MessageBox.Show("Bon de vente enregistré.");
+                    foreach (var l in _lines)
+                    {
+                        var detail = new VenteDetail
+                        {
+                            IdVente = vente.Id,
+                            IdProduit = l.IdProduit,
+                            PrixVente = l.PrixVente,
+                            Qte = l.Qte
+                        };
+                        db.VenteDetails.Add(detail);
+                    }
+                    db.SaveChanges();
+
+                    // Read back saved details to confirm
+                    var saved = db.VenteDetails.Where(d => d.IdVente == vente.Id).ToList();
+                    MessageBox.Show($"Bon de vente enregistré. Lignes sauvegardées : {saved.Count}");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                try { System.IO.File.AppendAllText("crash.log", $"[BonDeVente.Save] {DateTime.Now}\n{ex}\n\n"); } catch { }
+                MessageBox.Show("Erreur lors de l'enregistrement : " + ex.Message);
+            }
             _lines.Clear();
             RefreshDetailsGrid();
             txtNumVente.Clear();
