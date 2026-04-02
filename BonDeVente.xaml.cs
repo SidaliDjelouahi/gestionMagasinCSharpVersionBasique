@@ -16,6 +16,7 @@ namespace MonAppGestion
         private List<TempDetail> _lines = new List<TempDetail>();
         private List<Product> _allProducts = new List<Product>();
         private Product? _selectedProduct = null;
+        private TempDetail? _editingLine = null;
 
         public BonDeVente()
         {
@@ -224,18 +225,29 @@ namespace MonAppGestion
                 int.TryParse(txtQteLine.Text, out var qte) &&
                 decimal.TryParse(txtPrixLine.Text, out var prix))
             {
-                var line = new TempDetail
+                if (_editingLine != null)
                 {
-                    IdProduit = prod.Id,
-                    Nom = prod.Nom,
-                    PrixVente = prix,
-                    Qte = qte
-                };
-                _lines.Add(line);
+                    // Update existing line
+                    _editingLine.PrixVente = prix;
+                    _editingLine.Qte = qte;
+                    _editingLine = null;
+                    btnAddLine.Content = "Ajouter";
+                }
+                else
+                {
+                    var line = new TempDetail
+                    {
+                        IdProduit = prod.Id,
+                        Nom = prod.Nom,
+                        PrixVente = prix,
+                        Qte = qte
+                    };
+                    _lines.Add(line);
+                }
                 RefreshDetailsGrid();
                 txtQteLine.Clear();
                 txtPrixLine.Clear();
-                // After adding a line via the button, return focus to the product search box
+                // After adding/updating, return focus to the product search box
                 txtProductSearch.Focus();
                 Keyboard.Focus(txtProductSearch);
             }
@@ -248,7 +260,48 @@ namespace MonAppGestion
         private void RefreshDetailsGrid()
         {
             dgDetails.ItemsSource = null;
-            dgDetails.ItemsSource = _lines.Select(l => new { l.Nom, l.PrixVente, l.Qte, Total = l.PrixVente * l.Qte }).ToList();
+            dgDetails.ItemsSource = _lines;
+        }
+
+        private void Action_Delete_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is TempDetail td)
+            {
+                if (MessageBox.Show($"Supprimer la ligne '{td.Nom}' ?", "Confirmer", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    _lines.Remove(td);
+                    RefreshDetailsGrid();
+                }
+            }
+            else if (sender is Button b && b.CommandParameter is TempDetail td2)
+            {
+                _lines.Remove(td2);
+                RefreshDetailsGrid();
+            }
+        }
+
+        private void Action_Edit_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is TempDetail td)
+            {
+                // populate the qty and price fields for editing
+                _editingLine = td;
+                txtQteLine.Text = td.Qte.ToString();
+                txtPrixLine.Text = td.PrixVente.ToString();
+                btnAddLine.Content = "Mettre à jour";
+                // focus price for quick edit
+                txtPrixLine.Focus();
+                Keyboard.Focus(txtPrixLine);
+            }
+            else if (sender is Button b && b.CommandParameter is TempDetail td2)
+            {
+                _editingLine = td2;
+                txtQteLine.Text = td2.Qte.ToString();
+                txtPrixLine.Text = td2.PrixVente.ToString();
+                btnAddLine.Content = "Mettre à jour";
+                txtPrixLine.Focus();
+                Keyboard.Focus(txtPrixLine);
+            }
         }
 
         private void btnSaveVente_Click(object sender, RoutedEventArgs e)
@@ -305,6 +358,7 @@ namespace MonAppGestion
             public string Nom { get; set; } = string.Empty;
             public decimal PrixVente { get; set; }
             public int Qte { get; set; }
+            public decimal Total => PrixVente * Qte;
         }
     }
 }
