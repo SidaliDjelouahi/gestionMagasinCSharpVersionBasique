@@ -102,12 +102,21 @@ namespace MonAppGestion
                 MessageBox.Show("Sélectionnez d'abord un produit.");
                 return;
             }
+            // Check if product is referenced in VenteDetails (prevent deletion if used in sales)
+            using (var db = new AppDbContext())
+            {
+                var isUsedInVentes = db.VenteDetails.Any(d => d.ProduitId == selected.Id);
+                if (isUsedInVentes)
+                {
+                    MessageBox.Show($"Suppression refusée : le produit '{selected.Nom}' est présent dans des ventes (VenteDetails).", "Suppression refusée", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+            }
 
             if (MessageBox.Show($"Supprimer le produit {selected.Nom} ?", "Confirmation", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 using (var db = new AppDbContext())
                 {
-                    // Attach if needed
                     var toRemove = db.Products.Find(selected.Id);
                     if (toRemove != null)
                     {
