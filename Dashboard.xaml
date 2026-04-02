@@ -1,0 +1,19 @@
+<Window x:Class="MonAppGestion.Dashboard"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Tableau de Bord" Height="500" Width="900" WindowStartupLocation="CenterScreen">
+    <DockPanel>
+        <!-- Menu latéral -->
+        <StackPanel DockPanel.Dock="Left" Width="200" Background="#F3F3F3">
+            <TextBlock Text="Menu" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+            <Button x:Name="btnUtilisateurs" Content="Utilisateurs" Margin="0,5" Click="btnUtilisateurs_Click"/>
+            <Button x:Name="btnProduits" Content="Produits" Margin="0,5" Click="btnProduits_Click"/>
+            <Button x:Name="btnAutre" Content="Autre page" Margin="0,5" Click="btnAutre_Click"/>
+            <Separator Margin="0,10"/>
+            <Button Content="Déconnexion" Margin="0,5" Click="btnLogout_Click"/>
+        </StackPanel>
+
+        <!-- Zone de contenu navigable -->
+        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
+    </DockPanel>
+</Window>
