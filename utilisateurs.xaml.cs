@@ -3,10 +3,14 @@ using System.Windows;
 using System.Windows.Controls;
 using MonAppGestion.Models;
 
+// Support editing selected user via the top input fields
+
 namespace MonAppGestion
 {
     public partial class Utilisateurs : Page
     {
+        private int? _editingUserId = null;
+
         public Utilisateurs()
         {
             InitializeComponent();
@@ -32,9 +36,25 @@ namespace MonAppGestion
 
             using (var db = new AppDbContext())
             {
-                var nvxUser = new User { Username = txtNewUser.Text, Password = txtNewPass.Text };
-                db.Users.Add(nvxUser);
-                db.SaveChanges();
+                if (_editingUserId.HasValue)
+                {
+                    // Update existing user
+                    var existing = db.Users.FirstOrDefault(u => u.Id == _editingUserId.Value);
+                    if (existing != null)
+                    {
+                        existing.Username = txtNewUser.Text;
+                        existing.Password = txtNewPass.Text;
+                        db.SaveChanges();
+                    }
+                    _editingUserId = null;
+                    btnAjouter.Content = "Ajouter";
+                }
+                else
+                {
+                    var nvxUser = new User { Username = txtNewUser.Text, Password = txtNewPass.Text };
+                    db.Users.Add(nvxUser);
+                    db.SaveChanges();
+                }
             }
 
             txtNewUser.Clear();
@@ -61,6 +81,23 @@ namespace MonAppGestion
                 }
                 ChargerUtilisateurs();
             }
+        }
+
+        private void btnModifier_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedUser = dgUsers.SelectedItem as User;
+
+            if (selectedUser == null)
+            {
+                MessageBox.Show("Sélectionnez d'abord un utilisateur dans le tableau.");
+                return;
+            }
+
+            // Remplir les champs du haut pour modification
+            txtNewUser.Text = selectedUser.Username;
+            txtNewPass.Text = selectedUser.Password;
+            _editingUserId = selectedUser.Id;
+            btnAjouter.Content = "Enregistrer";
         }
     }
 }
