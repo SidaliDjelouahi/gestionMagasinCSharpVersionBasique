@@ -8,6 +8,8 @@ namespace MonAppGestion
 {
     public partial class Produits : Page
     {
+        private int? _editingProductId = null;
+
         public Produits()
         {
             InitializeComponent();
@@ -34,24 +36,62 @@ namespace MonAppGestion
             if (!decimal.TryParse(txtPrixAchat.Text, out var prixA)) prixA = 0;
             if (!decimal.TryParse(txtPrixVente.Text, out var prixV)) prixV = 0;
 
-            var prod = new Product
-            {
-                Code = txtCode.Text,
-                Nom = txtNom.Text,
-                Qte = qte,
-                PrixAchat = prixA,
-                PrixVente = prixV,
-                DateExpiration = dpDateExp.SelectedDate
-            };
-
             using (var db = new AppDbContext())
             {
-                db.Products.Add(prod);
-                db.SaveChanges();
+                if (_editingProductId.HasValue)
+                {
+                    var existing = db.Products.Find(_editingProductId.Value);
+                    if (existing != null)
+                    {
+                        existing.Code = txtCode.Text;
+                        existing.Nom = txtNom.Text;
+                        existing.Qte = qte;
+                        existing.PrixAchat = prixA;
+                        existing.PrixVente = prixV;
+                        existing.DateExpiration = dpDateExp.SelectedDate;
+                        db.SaveChanges();
+                    }
+                    _editingProductId = null;
+                    btnAjouter.Content = "Ajouter";
+                }
+                else
+                {
+                    var prod = new Product
+                    {
+                        Code = txtCode.Text,
+                        Nom = txtNom.Text,
+                        Qte = qte,
+                        PrixAchat = prixA,
+                        PrixVente = prixV,
+                        DateExpiration = dpDateExp.SelectedDate
+                    };
+                    db.Products.Add(prod);
+                    db.SaveChanges();
+                }
             }
 
             txtCode.Clear(); txtNom.Clear(); txtQte.Clear(); txtPrixAchat.Clear(); txtPrixVente.Clear(); dpDateExp.SelectedDate = null;
             ChargerProduits();
+        }
+
+        private void btnModifier_Click(object sender, RoutedEventArgs e)
+        {
+            var selected = dgProduits.SelectedItem as Product;
+            if (selected == null)
+            {
+                MessageBox.Show("Sélectionnez d'abord un produit.");
+                return;
+            }
+
+            txtCode.Text = selected.Code;
+            txtNom.Text = selected.Nom;
+            txtQte.Text = selected.Qte.ToString();
+            txtPrixAchat.Text = selected.PrixAchat.ToString();
+            txtPrixVente.Text = selected.PrixVente.ToString();
+            dpDateExp.SelectedDate = selected.DateExpiration;
+
+            _editingProductId = selected.Id;
+            btnAjouter.Content = "Enregistrer";
         }
 
         private void btnSupprimer_Click(object sender, RoutedEventArgs e)

@@ -29,6 +29,11 @@ namespace MonAppGestion
             MainFrame.Content = new TextBlock { Text = "Page en construction", FontSize = 20, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
         }
 
+        private void btnBonDeVente_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new BonDeVente());
+        }
+
         private void btnLogout_Click(object sender, RoutedEventArgs e)
         {
             // Ferme le Dashboard et retourne à la fenêtre de connexion
