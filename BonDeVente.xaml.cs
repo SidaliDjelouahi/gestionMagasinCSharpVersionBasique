@@ -28,6 +28,33 @@ namespace MonAppGestion
                 dpDateVente.SelectedDate = DateTime.Today;
                 cbProducts.Focus();
                 Keyboard.Focus(cbProducts);
+
+                // Compute next NumVente: take the maximum numeric NumVente and add 1
+                try
+                {
+                    using (var db = new AppDbContext())
+                    {
+                        var nums = db.Ventes.Select(v => v.NumVente).ToList();
+                        var maxNum = 0;
+                        foreach (var s in nums)
+                        {
+                            if (int.TryParse(s, out var v))
+                            {
+                                if (v > maxNum) maxNum = v;
+                                continue;
+                            }
+                            // try to extract trailing digits
+                            var digits = new string(s?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
+                            if (int.TryParse(digits, out v))
+                            {
+                                if (v > maxNum) maxNum = v;
+                            }
+                        }
+                        var next = maxNum + 1;
+                        txtNumVente.Text = next.ToString();
+                    }
+                }
+                catch { }
             }
             catch { }
         }
