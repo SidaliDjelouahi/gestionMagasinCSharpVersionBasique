@@ -1,0 +1,23 @@
+<Page x:Class="MonAppGestion.Ventes"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Ventes"
+      Loaded="Page_Loaded">
+    <Grid Margin="12">
+        <TextBlock Text="Liste des ventes" FontSize="20" FontWeight="Bold" />
+        <DataGrid x:Name="dgVentes" Margin="0,40,0,0" AutoGenerateColumns="False" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="80" />
+                <DataGridTextColumn Header="NumVente" Binding="{Binding NumVente}" Width="*" />
+                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="150" />
+                <DataGridTemplateColumn Header="Actions" Width="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Consulter" Click="Action_Consulter_Click" Padding="6,2" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

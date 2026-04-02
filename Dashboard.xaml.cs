@@ -29,6 +29,11 @@ namespace MonAppGestion
             MainFrame.Content = new TextBlock { Text = "Page en construction", FontSize = 20, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
         }
 
+        private void btnVentes_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new Ventes());
+        }
+
         private void btnBonDeVente_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Navigate(new BonDeVente());
