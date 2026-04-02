@@ -120,9 +120,9 @@ namespace MonAppGestion
                             // optionally set price and qty fields for user
                             txtPrixLine.Text = chosen.PrixVente.ToString();
                             txtQteLine.Text = "1";
-                            // focus quantity to allow quick confirm/change
-                            txtQteLine.Focus();
-                            Keyboard.Focus(txtQteLine);
+                            // After adding a line, return focus to the product search box for quick next entry
+                            txtProductSearch.Focus();
+                            Keyboard.Focus(txtProductSearch);
                             e.Handled = true;
                         }
                     }
@@ -235,6 +235,9 @@ namespace MonAppGestion
                 RefreshDetailsGrid();
                 txtQteLine.Clear();
                 txtPrixLine.Clear();
+                // After adding a line via the button, return focus to the product search box
+                txtProductSearch.Focus();
+                Keyboard.Focus(txtProductSearch);
             }
             else
             {
