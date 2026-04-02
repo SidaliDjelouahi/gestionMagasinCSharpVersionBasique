@@ -15,7 +15,7 @@ namespace MonAppGestion
     {
         private List<TempDetail> _lines = new List<TempDetail>();
         private List<Product> _allProducts = new List<Product>();
-        private ICollectionView? _productsView;
+        private Product? _selectedProduct = null;
 
         public BonDeVente()
         {
@@ -30,8 +30,8 @@ namespace MonAppGestion
             try
             {
                 dpDateVente.SelectedDate = DateTime.Today;
-                cbProducts.Focus();
-                Keyboard.Focus(cbProducts);
+                txtProductSearch.Focus();
+                Keyboard.Focus(txtProductSearch);
 
                 // Compute next NumVente: take the maximum numeric NumVente and add 1
                 try
@@ -68,41 +68,139 @@ namespace MonAppGestion
             using (var db = new AppDbContext())
             {
                 _allProducts = db.Products.ToList();
-                _productsView = CollectionViewSource.GetDefaultView(_allProducts);
-                cbProducts.ItemsSource = _productsView;
+                lbProductSuggestions.ItemsSource = _allProducts;
             }
         }
-
-        private void cbProducts_KeyUp(object sender, KeyEventArgs e)
+        private void txtProductSearch_KeyUp(object sender, KeyEventArgs e)
         {
             try
             {
-                var text = cbProducts.Text ?? string.Empty;
-                if (_productsView == null) return;
+                var text = txtProductSearch.Text ?? string.Empty;
                 if (string.IsNullOrWhiteSpace(text))
                 {
-                    _productsView.Filter = null;
-                    _productsView.Refresh();
-                    cbProducts.IsDropDownOpen = false;
+                    lbProductSuggestions.Visibility = Visibility.Collapsed;
+                    lbProductSuggestions.ItemsSource = null;
+                    _selectedProduct = null;
                     return;
                 }
 
-                _productsView.Filter = obj =>
+                var filtered = _allProducts.Where(p =>
+                    (!string.IsNullOrEmpty(p.Nom) && p.Nom.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (!string.IsNullOrEmpty(p.Code) && p.Code.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)
+                ).ToList();
+
+                if (filtered.Any())
                 {
-                    if (obj is not Product p) return false;
-                    var t = text.Trim();
-                    return (p.Nom?.IndexOf(t, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                           (p.Code?.IndexOf(t, StringComparison.OrdinalIgnoreCase) >= 0);
-                };
-                _productsView.Refresh();
-                cbProducts.IsDropDownOpen = true;
+                    lbProductSuggestions.ItemsSource = filtered;
+                    lbProductSuggestions.Visibility = Visibility.Visible;
+                    // handle navigation keys
+                    if (e.Key == Key.Enter)
+                    {
+                        // select first
+                        lbProductSuggestions.SelectedIndex = 0;
+                        var sel = lbProductSuggestions.SelectedItem as Product;
+                        if (sel != null)
+                        {
+                            _selectedProduct = sel;
+                            txtProductSearch.Text = sel.Nom;
+                            lbProductSuggestions.Visibility = Visibility.Collapsed;
+                        }
+                    }
+                }
+                else
+                {
+                    lbProductSuggestions.ItemsSource = null;
+                    lbProductSuggestions.Visibility = Visibility.Collapsed;
+                    _selectedProduct = null;
+                }
+            }
+            catch { }
+        }
+
+        private void txtProductSearch_MouseEnter(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                txtProductSearch.Focus();
+                Keyboard.Focus(txtProductSearch);
+                if (lbProductSuggestions.Items.Count > 0)
+                    lbProductSuggestions.Visibility = Visibility.Visible;
+            }
+            catch { }
+        }
+
+        private void txtProductSearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            // If user presses Shift, move focus to the suggestions list (if any)
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+            {
+                if (lbProductSuggestions.Items.Count > 0)
+                {
+                    lbProductSuggestions.Visibility = Visibility.Visible;
+                    lbProductSuggestions.SelectedIndex = 0;
+                    lbProductSuggestions.Focus();
+                    Keyboard.Focus(lbProductSuggestions);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void lbProductSuggestions_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (lbProductSuggestions.SelectedItem is Product sel)
+                {
+                    _selectedProduct = sel;
+                    txtProductSearch.Text = sel.Nom;
+                    lbProductSuggestions.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch { }
+        }
+
+        private void lbProductSuggestions_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                if (e.Key == Key.Enter)
+                {
+                    if (lbProductSuggestions.SelectedItem is Product sel)
+                    {
+                        _selectedProduct = sel;
+                        txtProductSearch.Text = sel.Nom;
+                        lbProductSuggestions.Visibility = Visibility.Collapsed;
+                        // move focus to quantity textbox for quick entry
+                        txtQteLine.Focus();
+                        Keyboard.Focus(txtQteLine);
+                        e.Handled = true;
+                    }
+                }
+                else if (e.Key == Key.Escape)
+                {
+                    lbProductSuggestions.Visibility = Visibility.Collapsed;
+                    txtProductSearch.Focus();
+                    Keyboard.Focus(txtProductSearch);
+                    e.Handled = true;
+                }
             }
             catch { }
         }
 
         private void btnAddLine_Click(object sender, RoutedEventArgs e)
         {
-            if (cbProducts.SelectedItem is Product prod &&
+            Product? prod = null;
+            if (lbProductSuggestions.SelectedItem is Product sel)
+            {
+                prod = sel;
+            }
+            else if (!string.IsNullOrWhiteSpace(txtProductSearch.Text))
+            {
+                prod = _allProducts.FirstOrDefault(p => string.Equals(p.Nom, txtProductSearch.Text, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(p.Code, txtProductSearch.Text, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (prod != null &&
                 int.TryParse(txtQteLine.Text, out var qte) &&
                 decimal.TryParse(txtPrixLine.Text, out var prix))
             {
