@@ -1,12 +1,114 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
+using MonAppGestion.Models;
 
 namespace MonAppGestion
 {
     public partial class BonDeVente : Page
     {
+        private List<TempDetail> _lines = new List<TempDetail>();
+
         public BonDeVente()
         {
             InitializeComponent();
+            ChargerProduits();
+            RefreshDetailsGrid();
+        }
+
+        private void ChargerProduits()
+        {
+            using (var db = new AppDbContext())
+            {
+                var produits = db.Products.ToList();
+                cbProducts.ItemsSource = produits;
+            }
+        }
+
+        private void btnAddLine_Click(object sender, RoutedEventArgs e)
+        {
+            if (cbProducts.SelectedItem is Product prod &&
+                int.TryParse(txtQteLine.Text, out var qte) &&
+                decimal.TryParse(txtPrixLine.Text, out var prix))
+            {
+                var line = new TempDetail
+                {
+                    IdProduit = prod.Id,
+                    Nom = prod.Nom,
+                    PrixVente = prix,
+                    Qte = qte
+                };
+                _lines.Add(line);
+                RefreshDetailsGrid();
+                txtQteLine.Clear();
+                txtPrixLine.Clear();
+            }
+            else
+            {
+                MessageBox.Show("Sélectionnez un produit et entrez une quantité et un prix valides.");
+            }
+        }
+
+        private void RefreshDetailsGrid()
+        {
+            dgDetails.ItemsSource = null;
+            dgDetails.ItemsSource = _lines.Select(l => new { l.Nom, l.PrixVente, l.Qte, Total = l.PrixVente * l.Qte }).ToList();
+        }
+
+        private void btnSaveVente_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtNumVente.Text) || !dpDateVente.SelectedDate.HasValue)
+            {
+                MessageBox.Show("Remplissez le numéro et la date de la vente.");
+                return;
+            }
+
+            if (!_lines.Any())
+            {
+                MessageBox.Show("Ajoutez au moins une ligne au bon.");
+                return;
+            }
+
+            using (var db = new AppDbContext())
+            {
+                var vente = new Vente
+                {
+                    NumVente = txtNumVente.Text,
+                    Date = dpDateVente.SelectedDate.Value
+                };
+                db.Ventes.Add(vente);
+                db.SaveChanges();
+
+                foreach (var l in _lines)
+                {
+                    var detail = new VenteDetail
+                    {
+                        IdVente = vente.Id,
+                        IdProduit = l.IdProduit,
+                        PrixVente = l.PrixVente,
+                        Qte = l.Qte
+                    };
+                    db.VenteDetails.Add(detail);
+                }
+                db.SaveChanges();
+            }
+
+            MessageBox.Show("Bon de vente enregistré.");
+            _lines.Clear();
+            RefreshDetailsGrid();
+            txtNumVente.Clear();
+            dpDateVente.SelectedDate = null;
+        }
+
+        private class TempDetail
+        {
+            public int IdProduit { get; set; }
+            public string Nom { get; set; }
+            public decimal PrixVente { get; set; }
+            public int Qte { get; set; }
         }
     }
 }
+

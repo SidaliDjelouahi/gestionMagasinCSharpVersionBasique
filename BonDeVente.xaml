@@ -4,16 +4,53 @@
       Title="BonDeVente"
       Background="White">
     <Grid Margin="12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
 
-        <TextBlock Text="Bon de Vente" FontSize="22" FontWeight="Bold" />
+        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+            <TextBlock Text="Créer Bon de Vente" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" />
 
-        <StackPanel Grid.Row="1" Margin="0,20,0,0">
-            <TextBlock Text="Ici vous pouvez créer et gérer les bons de vente." Foreground="Gray"/>
-            <!-- Placeholder: add form or DataGrid as needed -->
+            <StackPanel Orientation="Horizontal" Margin="0,4">
+                <TextBlock Text="N° Vente:" Width="70" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtNumVente" Width="200" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,4">
+                <TextBlock Text="Date:" Width="70" VerticalAlignment="Center"/>
+                <DatePicker x:Name="dpDateVente" Width="200" />
+            </StackPanel>
+
+            <Separator Margin="0,8" />
+
+            <TextBlock Text="Ajouter ligne" FontWeight="Bold" Margin="0,6" />
+            <StackPanel Orientation="Horizontal" Margin="0,4">
+                <ComboBox x:Name="cbProducts" Width="200" DisplayMemberPath="Nom" SelectedValuePath="Id" />
+                <TextBox x:Name="txtQteLine" Width="60" Margin="8,0" />
+                <TextBox x:Name="txtPrixLine" Width="80" Margin="8,0" />
+                <Button x:Name="btnAddLine" Content="Ajouter" Click="btnAddLine_Click" Margin="8,0" />
+            </StackPanel>
+
+            <Button x:Name="btnSaveVente" Content="Enregistrer le bon" Click="btnSaveVente_Click" Margin="0,12,0,0" Width="200" Background="#007ACC" Foreground="White"/>
         </StackPanel>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Lignes du bon" FontSize="20" FontWeight="Bold" />
+            <DataGrid x:Name="dgDetails" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" Margin="0,8,0,0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Produit" Binding="{Binding Nom}" Width="*" />
+                    <DataGridTextColumn Header="Prix" Binding="{Binding PrixVente}" Width="100" />
+                    <DataGridTextColumn Header="Qte" Binding="{Binding Qte}" Width="80" />
+                    <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="100" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
     </Grid>
 </Page>
