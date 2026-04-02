@@ -61,6 +61,26 @@ private void SeedDatabase()
             });
             db.SaveChanges();
         }
+
+            // Ensure Ventes and VenteDetails tables exist (create if missing)
+            // Use raw SQL to avoid requiring migrations in this environment
+            db.Database.ExecuteSqlRaw(@"
+                CREATE TABLE IF NOT EXISTS Ventes (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    NumVente TEXT,
+                    Date TEXT
+                );
+            ");
+
+            db.Database.ExecuteSqlRaw(@"
+                CREATE TABLE IF NOT EXISTS VenteDetails (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    IdVente INTEGER,
+                    IdProduit INTEGER,
+                    PrixVente REAL,
+                    Qte INTEGER
+                );
+            ");
     }
 }
     private void btnLogin_Click(object sender, RoutedEventArgs e)

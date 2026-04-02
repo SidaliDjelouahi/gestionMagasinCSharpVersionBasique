@@ -7,6 +7,8 @@ namespace MonAppGestion
     {
         public DbSet<User> Users { get; set; }
         public DbSet<MonAppGestion.Models.Product> Products { get; set; }
+        public DbSet<MonAppGestion.Models.Vente> Ventes { get; set; }
+        public DbSet<MonAppGestion.Models.VenteDetail> VenteDetails { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
