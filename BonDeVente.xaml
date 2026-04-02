@@ -28,7 +28,8 @@
 
             <TextBlock Text="Ajouter ligne" FontWeight="Bold" Margin="0,6" />
             <StackPanel Orientation="Horizontal" Margin="0,4">
-                <ComboBox x:Name="cbProducts" Width="200" DisplayMemberPath="Nom" SelectedValuePath="Id" />
+                <ComboBox x:Name="cbProducts" Width="200" DisplayMemberPath="Nom" SelectedValuePath="Id"
+                          IsEditable="True" IsTextSearchEnabled="False" StaysOpenOnEdit="True" KeyUp="cbProducts_KeyUp" />
                 <TextBox x:Name="txtQteLine" Width="60" Margin="8,0" />
                 <TextBox x:Name="txtPrixLine" Width="80" Margin="8,0" />
                 <Button x:Name="btnAddLine" Content="Ajouter" Click="btnAddLine_Click" Margin="8,0" />

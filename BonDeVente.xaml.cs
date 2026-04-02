@@ -4,6 +4,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.ComponentModel;
+using System.Windows.Data;
 using MonAppGestion.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +14,8 @@ namespace MonAppGestion
     public partial class BonDeVente : Page
     {
         private List<TempDetail> _lines = new List<TempDetail>();
+        private List<Product> _allProducts = new List<Product>();
+        private ICollectionView? _productsView;
 
         public BonDeVente()
         {
@@ -63,9 +67,37 @@ namespace MonAppGestion
         {
             using (var db = new AppDbContext())
             {
-                var produits = db.Products.ToList();
-                cbProducts.ItemsSource = produits;
+                _allProducts = db.Products.ToList();
+                _productsView = CollectionViewSource.GetDefaultView(_allProducts);
+                cbProducts.ItemsSource = _productsView;
             }
+        }
+
+        private void cbProducts_KeyUp(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                var text = cbProducts.Text ?? string.Empty;
+                if (_productsView == null) return;
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    _productsView.Filter = null;
+                    _productsView.Refresh();
+                    cbProducts.IsDropDownOpen = false;
+                    return;
+                }
+
+                _productsView.Filter = obj =>
+                {
+                    if (obj is not Product p) return false;
+                    var t = text.Trim();
+                    return (p.Nom?.IndexOf(t, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                           (p.Code?.IndexOf(t, StringComparison.OrdinalIgnoreCase) >= 0);
+                };
+                _productsView.Refresh();
+                cbProducts.IsDropDownOpen = true;
+            }
+            catch { }
         }
 
         private void btnAddLine_Click(object sender, RoutedEventArgs e)
