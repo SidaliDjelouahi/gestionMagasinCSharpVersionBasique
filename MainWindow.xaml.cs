@@ -28,59 +28,22 @@ public partial class MainWindow : Window
 
 private void SeedDatabase()
 {
+    // Ensure DB schema exists using code-first initializer
+    DataInitializer.InitializeDatabase("database.db");
+
     using (var db = new AppDbContext())
     {
-            // Si la DB n'existe pas, la créer selon le modèle actuel.
-            // Si elle existe mais manque la table Products, on recrée pour synchroniser le schéma.
-            if (!File.Exists("database.db"))
-            {
-                db.Database.EnsureCreated();
-            }
-            else
-            {
-                try
-                {
-                    // Essaie d'accéder à la table Products ; si elle n'existe pas, une exception sera levée
-                    var _ = db.Products.Any();
-                }
-                catch
-                {
-                    db.Database.EnsureDeleted();
-                    db.Database.EnsureCreated();
-                }
-            }
-
-        // Si aucun utilisateur n'existe, on crée l'admin
+        // If no users, create default admin
         if (!db.Users.Any())
         {
-            db.Users.Add(new User 
-            { 
-                Username = "admin", 
-                Password = "123", 
-                Rank = "Admin" 
+            db.Users.Add(new User
+            {
+                Username = "admin",
+                Password = "123",
+                Rank = "Admin"
             });
             db.SaveChanges();
         }
-
-            // Ensure Ventes and VenteDetails tables exist (create if missing)
-            // Use raw SQL to avoid requiring migrations in this environment
-            db.Database.ExecuteSqlRaw(@"
-                CREATE TABLE IF NOT EXISTS Ventes (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    NumVente TEXT,
-                    Date TEXT
-                );
-            ");
-
-            db.Database.ExecuteSqlRaw(@"
-                CREATE TABLE IF NOT EXISTS VenteDetails (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    IdVente INTEGER,
-                    IdProduit INTEGER,
-                    PrixVente REAL,
-                    Qte INTEGER
-                );
-            ");
     }
 }
     private void btnLogin_Click(object sender, RoutedEventArgs e)
