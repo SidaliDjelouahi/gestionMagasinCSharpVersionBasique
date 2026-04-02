@@ -9,8 +9,8 @@ namespace MonAppGestion
         {
             InitializeComponent();
 
-            // Afficher une page par défaut
-            MainFrame.Navigate(new Utilisateurs());
+            // Afficher la page BonDeVente par défaut
+            MainFrame.Navigate(new BonDeVente());
         }
 
         private void btnUtilisateurs_Click(object sender, RoutedEventArgs e)
