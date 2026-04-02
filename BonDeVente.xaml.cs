@@ -96,14 +96,34 @@ namespace MonAppGestion
                     // handle navigation keys
                     if (e.Key == Key.Enter)
                     {
-                        // select first
-                        lbProductSuggestions.SelectedIndex = 0;
-                        var sel = lbProductSuggestions.SelectedItem as Product;
-                        if (sel != null)
+                        // If there's an exact match by code or name, prefer it
+                        Product? chosen = null;
+                        var exact = filtered.FirstOrDefault(p => string.Equals(p.Nom, text, StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(p.Code, text, StringComparison.OrdinalIgnoreCase));
+                        chosen = exact ?? filtered.FirstOrDefault();
+                        if (chosen != null)
                         {
-                            _selectedProduct = sel;
-                            txtProductSearch.Text = sel.Nom;
+                            // add directly to the bon with quantity=1 and prix=PrixVente
+                            var line = new TempDetail
+                            {
+                                IdProduit = chosen.Id,
+                                Nom = chosen.Nom,
+                                PrixVente = chosen.PrixVente,
+                                Qte = 1
+                            };
+                            _lines.Add(line);
+                            RefreshDetailsGrid();
+                            // clear search and hide suggestions
+                            txtProductSearch.Clear();
                             lbProductSuggestions.Visibility = Visibility.Collapsed;
+                            _selectedProduct = chosen;
+                            // optionally set price and qty fields for user
+                            txtPrixLine.Text = chosen.PrixVente.ToString();
+                            txtQteLine.Text = "1";
+                            // focus quantity to allow quick confirm/change
+                            txtQteLine.Focus();
+                            Keyboard.Focus(txtQteLine);
+                            e.Handled = true;
                         }
                     }
                 }
