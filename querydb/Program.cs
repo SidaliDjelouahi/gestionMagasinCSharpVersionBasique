@@ -5,53 +5,99 @@ class Program
 {
     static void Main()
     {
-        var cs = "Data Source=../database.db";
+        // Resolve repository database path by checking several candidate locations relative to the running binary
+        string ResolveDatabasePath()
+        {
+            var candidates = new string[]
+            {
+                System.IO.Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\database.db"),
+                System.IO.Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\database.db"),
+                System.IO.Path.Combine(AppContext.BaseDirectory, "..\\..\\database.db"),
+                System.IO.Path.Combine(AppContext.BaseDirectory, "..\\database.db"),
+                System.IO.Path.Combine(Environment.CurrentDirectory, "database.db"),
+                System.IO.Path.Combine(Environment.CurrentDirectory, "querydb", "database.db")
+            };
+
+            foreach (var c in candidates)
+            {
+                try
+                {
+                    var full = System.IO.Path.GetFullPath(c);
+                    if (System.IO.File.Exists(full) && new System.IO.FileInfo(full).Length > 0)
+                        return full;
+                }
+                catch { }
+            }
+
+            // fallback to database.db in repository root relative to base dir
+            return System.IO.Path.GetFullPath(System.IO.Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\database.db"));
+        }
+
+        var dbPath = ResolveDatabasePath();
+        Console.WriteLine($"Using database file: {dbPath}");
+        var cs = $"Data Source={dbPath}";
         using var conn = new SqliteConnection(cs);
         conn.Open();
 
-        Console.WriteLine("Tables:");
+        Console.WriteLine("Checking Ventes table for Versement column...");
+
+        bool hasVersement = false;
         using (var cmd = conn.CreateCommand())
         {
-            cmd.CommandText = "SELECT name, sql FROM sqlite_master WHERE type='table' ORDER BY name";
+            cmd.CommandText = "PRAGMA table_info('Ventes');";
             using var rdr = cmd.ExecuteReader();
             while (rdr.Read())
             {
-                var name = rdr.IsDBNull(0) ? "" : rdr.GetString(0);
-                var sql = rdr.IsDBNull(1) ? "" : rdr.GetString(1);
-                Console.WriteLine($"{name}: {sql}");
+                var colName = rdr.IsDBNull(1) ? "" : rdr.GetString(1);
+                if (string.Equals(colName, "Versement", StringComparison.OrdinalIgnoreCase))
+                {
+                    hasVersement = true;
+                    break;
+                }
             }
         }
 
-        Console.WriteLine("--- Ventes rows ---");
+        if (!hasVersement)
+        {
+            Console.WriteLine("Adding Versement column to Ventes...");
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "ALTER TABLE Ventes ADD COLUMN Versement REAL DEFAULT 0;";
+                cmd.ExecuteNonQuery();
+            }
+            Console.WriteLine("Versement column added.");
+        }
+
+        // Ensure __EFMigrationsHistory exists and contains entries for existing migrations
         using (var cmd = conn.CreateCommand())
         {
-            cmd.CommandText = "SELECT Id, NumVente, Date FROM Ventes";
-            using var rdr = cmd.ExecuteReader();
-            while (rdr.Read())
-            {
-                var id = rdr.IsDBNull(0) ? "NULL" : rdr.GetInt32(0).ToString();
-                var num = rdr.IsDBNull(1) ? "" : rdr.GetString(1);
-                var date = rdr.IsDBNull(2) ? "" : rdr.GetString(2);
-                Console.WriteLine($"{id}|{num}|{date}");
-            }
+            cmd.CommandText = "CREATE TABLE IF NOT EXISTS __EFMigrationsHistory (MigrationId TEXT NOT NULL CONSTRAINT PK__EFMigrationsHistory PRIMARY KEY, ProductVersion TEXT NOT NULL);";
+            cmd.ExecuteNonQuery();
         }
 
-        Console.WriteLine("--- VenteDetails rows ---");
-        using (var cmd = conn.CreateCommand())
+        // Insert migration records if missing
+        void InsertIfMissing(string migrationId)
         {
-            cmd.CommandText = "SELECT Id, IdVente, IdProduit, PrixVente, Qte FROM VenteDetails";
-            using var rdr = cmd.ExecuteReader();
-            while (rdr.Read())
+            using var cmdCheck = conn.CreateCommand();
+            cmdCheck.CommandText = "SELECT COUNT(1) FROM __EFMigrationsHistory WHERE MigrationId = $id";
+            cmdCheck.Parameters.AddWithValue("$id", migrationId);
+            var exists = Convert.ToInt32(cmdCheck.ExecuteScalar() ?? 0) > 0;
+            if (!exists)
             {
-                var id = rdr.IsDBNull(0) ? "NULL" : rdr.GetInt32(0).ToString();
-                var idV = rdr.IsDBNull(1) ? "NULL" : rdr.GetInt32(1).ToString();
-                var idP = rdr.IsDBNull(2) ? "NULL" : rdr.GetInt32(2).ToString();
-                var prix = rdr.IsDBNull(3) ? "NULL" : rdr.GetDouble(3).ToString();
-                var qte = rdr.IsDBNull(4) ? "NULL" : rdr.GetInt32(4).ToString();
-                Console.WriteLine($"{id}|{idV}|{idP}|{prix}|{qte}");
+                using var cmdIns = conn.CreateCommand();
+                cmdIns.CommandText = "INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES ($id, $pv);";
+                cmdIns.Parameters.AddWithValue("$id", migrationId);
+                cmdIns.Parameters.AddWithValue("$pv", "8.0.0");
+                cmdIns.ExecuteNonQuery();
+                Console.WriteLine($"Inserted migration record: {migrationId}");
             }
         }
 
+        // mark initial create and current migration as applied
+        InsertIfMissing("20260328074638_InitialCreate");
+        InsertIfMissing("20260404131414_AddVersementToVentes");
+
+        Console.WriteLine("Done.");
         conn.Close();
     }
 }

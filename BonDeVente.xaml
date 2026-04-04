@@ -46,8 +46,24 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Grid.Row="1" VerticalAlignment="Bottom" Margin="0,12,0,0">
-                <TextBox x:Name="txtTotal" Width="250" Height="64" FontSize="50" IsEnabled="False" TextAlignment="Right" VerticalContentAlignment="Center" />
-                <Button x:Name="btnSaveVente" Content="Enregistrerle bon" Click="btnSaveVente_Click" Margin="12,0,0,0" Width="150" Background="#007ACC" Foreground="White" />
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Vertical" Grid.Row="0">
+                        <TextBlock Text="Versement" FontWeight="Bold" Margin="0,0,0,4" />
+                        <TextBox x:Name="txtVersement" Width="220" Height="40" FontSize="18" TextAlignment="Right" VerticalContentAlignment="Center" TextChanged="txtVersement_TextChanged" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" Grid.Row="1" Margin="0,8,0,0">
+                        <TextBlock Text="Total du Bon" FontWeight="Bold" Margin="0,0,0,4" />
+                        <TextBox x:Name="txtTotal" Width="220" Height="64" FontSize="40" IsEnabled="False" TextAlignment="Right" VerticalContentAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+
+                <Button x:Name="btnSaveVente" Content="Enregistrer le bon" Click="btnSaveVente_Click" Margin="24,0,0,0" Width="150" Height="64" Background="#007ACC" Foreground="White" VerticalAlignment="Center" />
             </StackPanel>
         </Grid>
 

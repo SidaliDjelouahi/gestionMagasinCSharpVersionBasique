@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Globalization;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.ComponentModel;
@@ -17,12 +18,18 @@ namespace MonAppGestion
         private List<Product> _allProducts = new List<Product>();
         private Product? _selectedProduct = null;
         private TempDetail? _editingLine = null;
+        private bool _versementEdited = false;
+        private bool _settingVersementProgrammatically = false;
 
         public BonDeVente()
         {
             InitializeComponent();
             ChargerProduits();
             dpDateVente.SelectedDate = DateTime.Today;
+            _versementEdited = false;
+            _settingVersementProgrammatically = true;
+            txtVersement.Text = "0.00";
+            _settingVersementProgrammatically = false;
             RefreshDetailsGrid();
         }
 
@@ -290,8 +297,24 @@ namespace MonAppGestion
                 decimal total = _lines.Sum(l => l.Total);
                 // show with two decimals
                 txtTotal.Text = total.ToString("0.00");
+                // If the user did not manually edit the versement, default it to the total
+                if (!_versementEdited)
+                {
+                    try
+                    {
+                        _settingVersementProgrammatically = true;
+                        txtVersement.Text = total.ToString("0.00");
+                    }
+                    finally { _settingVersementProgrammatically = false; }
+                }
             }
             catch { txtTotal.Text = "0.00"; }
+        }
+
+        private void txtVersement_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_settingVersementProgrammatically) return;
+            _versementEdited = true;
         }
 
         private void dgDetails_CellEditEnding(object sender, System.Windows.Controls.DataGridCellEditEndingEventArgs e)
@@ -372,13 +395,29 @@ namespace MonAppGestion
             {
                 using (var db = new AppDbContext())
                 {
+                    decimal versement = 0m;
+                    // try current culture then invariant (accept both comma and dot)
+                    if (!decimal.TryParse(txtVersement.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out versement))
+                    {
+                        var alt = txtVersement.Text?.Replace(',', '.');
+                        decimal.TryParse(alt, NumberStyles.Number, CultureInfo.InvariantCulture, out versement);
+                    }
+
                     var vente = new Vente
                     {
                         NumVente = txtNumVente.Text,
-                        Date = dpDateVente.SelectedDate.Value
+                        Date = dpDateVente.SelectedDate.Value,
+                        Versement = versement
                     };
                     db.Ventes.Add(vente);
                     db.SaveChanges();
+
+                    // ensure Versement persisted (fallback in case EF mapping issues)
+                    try
+                    {
+                        db.Database.ExecuteSqlInterpolated($"UPDATE Ventes SET Versement = {versement} WHERE Id = {vente.Id};");
+                    }
+                    catch { }
 
                     foreach (var l in _lines)
                     {
@@ -423,6 +462,8 @@ namespace MonAppGestion
             }
             catch { txtNumVente.Clear(); }
             dpDateVente.SelectedDate = DateTime.Today;
+            try { txtVersement.Text = "0.00"; } catch { }
+            try { txtQteLine.Clear(); txtPrixLine.Clear(); _editingLine = null; btnAddLine.Content = "Ajouter"; } catch { }
         }
 
         private class TempDetail : INotifyPropertyChanged
