@@ -28,7 +28,8 @@ namespace MonAppGestion
         {
             if (sender is Button btn && btn.DataContext is Vente v)
             {
-                MessageBox.Show($"Vente: Id={v.Id}\nNumVente={v.NumVente}\nDate={v.Date}", "Consulter vente");
+                // Navigate to the consulter page showing the details of the sale
+                NavigationService?.Navigate(new BonDeVenteConsulter(v.Id));
             }
         }
     }

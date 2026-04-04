@@ -1,0 +1,1 @@
+1- produits , suppression : il verifie si produit existe dans table ventesDetails , il refuse la suppression

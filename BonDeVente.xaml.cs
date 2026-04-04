@@ -104,15 +104,23 @@ namespace MonAppGestion
                         chosen = exact ?? filtered.FirstOrDefault();
                         if (chosen != null)
                         {
-                            // add directly to the bon with quantity=1 and prix=PrixVente
-                            var line = new TempDetail
+                            // If product already exists in current lines, increment its quantity instead of adding a new line
+                            var existing = _lines.FirstOrDefault(l => l.IdProduit == chosen.Id);
+                            if (existing != null)
                             {
-                                IdProduit = chosen.Id,
-                                Nom = chosen.Nom,
-                                PrixVente = chosen.PrixVente,
-                                Qte = 1
-                            };
-                            _lines.Add(line);
+                                existing.Qte += 1;
+                            }
+                            else
+                            {
+                                var line = new TempDetail
+                                {
+                                    IdProduit = chosen.Id,
+                                    Nom = chosen.Nom,
+                                    PrixVente = chosen.PrixVente,
+                                    Qte = 1
+                                };
+                                _lines.Add(line);
+                            }
                             RefreshDetailsGrid();
                             // clear search and hide suggestions
                             txtProductSearch.Clear();
@@ -121,7 +129,7 @@ namespace MonAppGestion
                             // optionally set price and qty fields for user
                             txtPrixLine.Text = chosen.PrixVente.ToString();
                             txtQteLine.Text = "1";
-                            // After adding a line, return focus to the product search box for quick next entry
+                            // After adding/incrementing, return focus to the product search box for quick next entry
                             txtProductSearch.Focus();
                             Keyboard.Focus(txtProductSearch);
                             e.Handled = true;
@@ -235,14 +243,25 @@ namespace MonAppGestion
                 }
                 else
                 {
-                    var line = new TempDetail
+                    // If a line for this product already exists, increment its quantity instead of adding a duplicate line
+                    var existing = _lines.FirstOrDefault(l => l.IdProduit == prod.Id);
+                    if (existing != null)
                     {
-                        IdProduit = prod.Id,
-                        Nom = prod.Nom,
-                        PrixVente = prix,
-                        Qte = qte
-                    };
-                    _lines.Add(line);
+                        existing.Qte += qte;
+                        // update price to the entered price (useful if price changed)
+                        existing.PrixVente = prix;
+                    }
+                    else
+                    {
+                        var line = new TempDetail
+                        {
+                            IdProduit = prod.Id,
+                            Nom = prod.Nom,
+                            PrixVente = prix,
+                            Qte = qte
+                        };
+                        _lines.Add(line);
+                    }
                 }
                 RefreshDetailsGrid();
                 txtQteLine.Clear();
@@ -261,6 +280,37 @@ namespace MonAppGestion
         {
             dgDetails.ItemsSource = null;
             dgDetails.ItemsSource = _lines;
+            UpdateTotal();
+        }
+
+        private void UpdateTotal()
+        {
+            try
+            {
+                decimal total = _lines.Sum(l => l.Total);
+                // show with two decimals
+                txtTotal.Text = total.ToString("0.00");
+            }
+            catch { txtTotal.Text = "0.00"; }
+        }
+
+        private void dgDetails_CellEditEnding(object sender, System.Windows.Controls.DataGridCellEditEndingEventArgs e)
+        {
+            // Allow the edit to commit, then update total on the dispatcher
+            try
+            {
+                Dispatcher.BeginInvoke((System.Action)(() => UpdateTotal()), System.Windows.Threading.DispatcherPriority.Background);
+            }
+            catch { }
+        }
+
+        private void dgDetails_RowEditEnding(object sender, System.Windows.Controls.DataGridRowEditEndingEventArgs e)
+        {
+            try
+            {
+                Dispatcher.BeginInvoke((System.Action)(() => UpdateTotal()), System.Windows.Threading.DispatcherPriority.Background);
+            }
+            catch { }
         }
 
         private void Action_Delete_Click(object sender, RoutedEventArgs e)
@@ -348,8 +398,31 @@ namespace MonAppGestion
             }
             _lines.Clear();
             RefreshDetailsGrid();
-            txtNumVente.Clear();
-            dpDateVente.SelectedDate = null;
+            // After saving, compute the next available NumVente (increment) and reset the date to today
+            try
+            {
+                using (var db2 = new AppDbContext())
+                {
+                    var nums = db2.Ventes.Select(v => v.NumVente).ToList();
+                    var maxNum = 0;
+                    foreach (var s in nums)
+                    {
+                        if (int.TryParse(s, out var v))
+                        {
+                            if (v > maxNum) maxNum = v;
+                            continue;
+                        }
+                        var digits = new string(s?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
+                        if (int.TryParse(digits, out v))
+                        {
+                            if (v > maxNum) maxNum = v;
+                        }
+                    }
+                    txtNumVente.Text = (maxNum + 1).ToString();
+                }
+            }
+            catch { txtNumVente.Clear(); }
+            dpDateVente.SelectedDate = DateTime.Today;
         }
 
         private class TempDetail : INotifyPropertyChanged

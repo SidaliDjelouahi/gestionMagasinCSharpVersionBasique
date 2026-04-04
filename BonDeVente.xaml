@@ -35,17 +35,20 @@
                 <TextBlock Text="Ajouter ligne" FontWeight="Bold" Margin="0,6" />
                 <StackPanel Orientation="Horizontal" Margin="0,4">
                     <StackPanel VerticalAlignment="Top">
-                        <TextBox x:Name="txtProductSearch" Width="200" Height="24" KeyUp="txtProductSearch_KeyUp" KeyDown="txtProductSearch_KeyDown" MouseEnter="txtProductSearch_MouseEnter" />
-                        <ListBox x:Name="lbProductSuggestions" Width="200" Height="120" Visibility="Collapsed"
+                        <TextBox x:Name="txtProductSearch" Width="180" Height="24" KeyUp="txtProductSearch_KeyUp" KeyDown="txtProductSearch_KeyDown" MouseEnter="txtProductSearch_MouseEnter" />
+                        <ListBox x:Name="lbProductSuggestions" Width="180" Height="120" Visibility="Collapsed"
                                  DisplayMemberPath="Nom" SelectionChanged="lbProductSuggestions_SelectionChanged" KeyDown="lbProductSuggestions_KeyDown"/>
                     </StackPanel>
-                    <TextBox x:Name="txtQteLine" Width="60" Margin="8,0" VerticalAlignment="Top" />
-                    <TextBox x:Name="txtPrixLine" Width="80" Margin="8,0" VerticalAlignment="Top" />
-                    <Button x:Name="btnAddLine" Content="Ajouter" Click="btnAddLine_Click" Margin="8,0" VerticalAlignment="Top" />
+                    <TextBox x:Name="txtQteLine" Width=" 40" Height="24" Margin="8,0" VerticalAlignment="Top" />
+                    <TextBox x:Name="txtPrixLine" Width="60" Height="24" Margin="8,0" VerticalAlignment="Top" />
+                    <Button x:Name="btnAddLine" Content="Ajouter" Width="80" Height="24" Click="btnAddLine_Click" Margin="8,0" VerticalAlignment="Top" />
                 </StackPanel>
             </StackPanel>
 
-            <Button x:Name="btnSaveVente" Content="Enregistrer le bon" Click="btnSaveVente_Click" Margin="0,12,0,0" Width="200" Background="#007ACC" Foreground="White" Grid.Row="1" VerticalAlignment="Bottom" />
+            <StackPanel Orientation="Horizontal" Grid.Row="1" VerticalAlignment="Bottom" Margin="0,12,0,0">
+                <TextBox x:Name="txtTotal" Width="250" Height="64" FontSize="50" IsEnabled="False" TextAlignment="Right" VerticalContentAlignment="Center" />
+                <Button x:Name="btnSaveVente" Content="Enregistrerle bon" Click="btnSaveVente_Click" Margin="12,0,0,0" Width="150" Background="#007ACC" Foreground="White" />
+            </StackPanel>
         </Grid>
 
         <Grid Grid.Column="1">
@@ -55,7 +58,8 @@
             </Grid.RowDefinitions>
 
             <TextBlock Text="Lignes du bon" FontSize="20" FontWeight="Bold" />
-            <DataGrid x:Name="dgDetails" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" Margin="0,8,0,0">
+            <DataGrid x:Name="dgDetails" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" Margin="0,8,0,0"
+                      CellEditEnding="dgDetails_CellEditEnding" RowEditEnding="dgDetails_RowEditEnding">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Produit" Binding="{Binding Nom}" Width="*" />
                     <DataGridTextColumn Header="Prix" Binding="{Binding PrixVente}" Width="100" />

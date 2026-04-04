@@ -1,0 +1,93 @@
+"Je veux implémenter des versions Basique et Premium. Peux-tu m'expliquer 
+comment modifier mon fichier .csproj pour ajouter une constante de compilation
+ PREMIUM_VERSION quand je choisis une configuration spécifique ?"
+
+ "Crée une classe LicenseService.cs qui vérifie dans ma base SQLite si une clé 
+ de licence valide existe. Utilise EF Core pour lire une table Configurations. 
+ Ajoute aussi une méthode qui utilise #if 
+ PREMIUM_VERSION pour retourner si l'exécutable lui-même permet les options avancées."
+
+ "Dans ce fichier XAML.cs, modifie le constructeur pour masquer les boutons BtnStats 
+ et BtnExport si LicenseService.HasPremiumAccess() est faux."
+
+ =======================================
+
+ je vais procéder simple ,je vais continuer toute l'application avec tout les options ,
+  ensuite pour creer une version simple je vais rendre 
+ les interfance et les elements hidden , et j'ajoute une securite de SN duHDD
+
+ -------------------------------------------
+
+ Récupérer le numéro de série du HDD
+En C#, vous pouvez utiliser System.Management pour extraire l'identifiant unique du matériel. C'est plus fiable que le nom de l'ordinateur qui peut changer.
+
+Étape préalable : Ajoutez la référence via NuGet : System.Management.
+
+C#
+using System.Management;
+
+public string GetHDDSerialNumber()
+{
+    string serial = "";
+    try
+    {
+        ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT SerialNumber FROM Win32_DiskDrive");
+        foreach (ManagementObject drive in searcher.Get())
+        {
+            serial = drive["SerialNumber"]?.ToString().Trim();
+            if (!string.IsNullOrEmpty(serial)) break; // On prend le premier trouvé
+        }
+    }
+    catch (Exception)
+    {
+        serial = "UNKNOWN";
+    }
+    return serial;
+}
+2. La Logique de Sécurité (Le "Check")
+Vous allez comparer le SN du disque actuel avec celui stocké en base de données ou un fichier de licence.
+
+C#
+public bool IsPremiumAuthorized()
+{
+    string currentID = GetHDDSerialNumber();
+    // On récupère le SN autorisé stocké dans votre SQLite
+    string authorizedID = _dbContext.Settings.FirstOrDefault()?.HardwareKey; 
+
+    return currentID == authorizedID;
+}
+3. Masquer les éléments (UI)
+Pour que ce soit propre dans votre interface WPF, créez une méthode AppliquerRestrictions() appelée au chargement de vos fenêtres.
+
+C#
+private void AppliquerRestrictions()
+{
+    if (!IsPremiumAuthorized())
+    {
+        // Masquer les boutons ou menus premium
+        BtnStatistiques.Visibility = Visibility.Collapsed;
+        MenuExportExcel.IsEnabled = false;
+        
+        // Optionnel : Ajouter un petit badge "Version Basique"
+        TxtVersionStatus.Text = "Version Basique";
+    }
+    else
+    {
+        TxtVersionStatus.Text = "Version Professionnelle";
+    }
+}
+4. Pourquoi c'est une bonne idée ?
+Mises à jour faciles : Si vous trouvez un bug, vous le corrigez une seule fois pour tout le 
+monde.
+
+Vente incitative : Vous pouvez laisser les boutons visibles mais "Grisés" 
+(IsEnabled = false). Quand l'utilisateur clique dessus, vous affichez un message :
+ "Cette option est disponible dans la version Pro. Voulez-vous activer votre licence ?"
+
+Sécurité physique : En liant le logiciel au HDD, l'utilisateur ne peut pas simplement 
+copier le dossier de l'application sur un autre PC pour avoir la version Pro.
+
+Attention sur le HDD Serial Number :
+Certains disques (notamment des SSD externes ou certaines configurations RAID) 
+peuvent renvoyer des formats de numéros de série étranges. Testez bien votre fonction GetHDDSerialNumber
+ sur 2 ou 3 machines différentes avant de verrouiller totalement le système.
