@@ -67,17 +67,62 @@ namespace MonAppGestion
                 MessageBox.Show("Sélectionnez un client à supprimer.", "Supprimer", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
+            using (var db = new AppDbContext())
+            {
+                // Vérifier si le client est référencé dans la table Ventes
+                var linked = db.Ventes.Any(v => v.IdClient == sel.Id);
+                if (linked)
+                {
+                    MessageBox.Show("Impossible de supprimer : le client est lié à des ventes.", "Suppression impossible", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
-            var res = MessageBox.Show($"Supprimer le client '{sel.Nom}' ?", "Confirmer", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (res != MessageBoxResult.Yes) return;
+                var res = MessageBox.Show($"Supprimer le client '{sel.Nom}' ?", "Confirmer", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (res != MessageBoxResult.Yes) return;
 
-            using var db = new AppDbContext();
-            var client = db.Clients.Find(sel.Id);
-            if (client == null) return;
-            db.Clients.Remove(client);
-            db.SaveChanges();
+                var client = db.Clients.Find(sel.Id);
+                if (client == null) return;
+                db.Clients.Remove(client);
+                db.SaveChanges();
+            }
+
             ClearInputs();
             LoadClients();
+        }
+
+        private void btnSituation_Click(object sender, RoutedEventArgs e)
+        {
+            if (dgClients.SelectedItem is not Client sel)
+            {
+                MessageBox.Show("Sélectionnez un client.", "Situation", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            try
+            {
+                using var db = new AppDbContext();
+                // Get ventes for client
+                var ventes = db.Ventes.Where(v => v.IdClient == sel.Id).Select(v => v.Id).ToList();
+                if (!ventes.Any())
+                {
+                    MessageBox.Show("Aucune vente pour ce client.", "Situation", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Load details into memory then compute sums to avoid provider translation issues
+                var details = db.VenteDetails.Where(d => ventes.Contains(d.VenteId)).AsEnumerable().ToList();
+                decimal total = details.Sum(d => d.PrixVente * d.Qte);
+                var versements = db.Ventes.Where(v => v.IdClient == sel.Id).AsEnumerable().Sum(v => v.Versement);
+                var reste = total - versements;
+
+                var msg = $"Client: {sel.Nom}\nVentes: {ventes.Count}\nTotal TTC: {total:0.00}\nVersements: {versements:0.00}\nReste à payer: {reste:0.00}";
+                    var wnd = new ClientsSituation(sel.Id, sel.Nom);
+                    wnd.Owner = Window.GetWindow(this);
+                    wnd.ShowDialog();
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show($"Erreur lors du calcul : {ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void dgClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -87,6 +132,15 @@ namespace MonAppGestion
                 txtNom.Text = sel.Nom;
                 txtAdresse.Text = sel.Adresse;
                 txtTelephone.Text = sel.Telephone;
+                btnModifier.IsEnabled = true;
+                btnSupprimer.IsEnabled = true;
+                btnSituation.IsEnabled = true;
+            }
+            else
+            {
+                btnModifier.IsEnabled = false;
+                btnSupprimer.IsEnabled = false;
+                btnSituation.IsEnabled = false;
             }
         }
 

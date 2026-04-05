@@ -9,6 +9,8 @@ using System.ComponentModel;
 using System.Windows.Data;
 using MonAppGestion.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Printing;
+using System.Windows.Documents;
 
 namespace MonAppGestion
 {
@@ -40,7 +42,12 @@ namespace MonAppGestion
             using (var db = new AppDbContext())
             {
                 _allClients = db.Clients.OrderBy(c => c.Nom).ToList();
+                // Insert an empty placeholder so the ComboBox shows a blank entry before any selection
+                var placeholder = new Client { Id = 0, Nom = string.Empty, Adresse = string.Empty, Telephone = string.Empty };
+                _allClients.Insert(0, placeholder);
                 cbClients.ItemsSource = _allClients;
+                // select the placeholder by default
+                cbClients.SelectedIndex = 0;
             }
         }
 
@@ -434,7 +441,7 @@ namespace MonAppGestion
                         Versement = versement
                     };
                     // attach selected client if any
-                    if (cbClients.SelectedItem is Client selClient)
+                    if (cbClients.SelectedItem is Client selClient && selClient.Id != 0)
                     {
                         vente.IdClient = selClient.Id;
                     }
@@ -493,6 +500,102 @@ namespace MonAppGestion
             dpDateVente.SelectedDate = DateTime.Today;
             try { txtVersement.Text = "0.00"; } catch { }
             try { txtQteLine.Clear(); txtPrixLine.Clear(); _editingLine = null; btnAddLine.Content = "Ajouter"; } catch { }
+        }
+
+        private void btnPrint_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_lines.Any())
+            {
+                MessageBox.Show("Aucune ligne à imprimer.", "Imprimer", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Build FlowDocument ticket
+            var fd = new FlowDocument();
+            fd.PagePadding = new Thickness(12);
+            fd.ColumnWidth = 300; // small width for ticket printers
+
+            // Header
+            var header = new Paragraph(new Bold(new Run("Bon de vente"))) { FontSize = 16, TextAlignment = TextAlignment.Center };
+            fd.Blocks.Add(header);
+
+            // Sale meta
+            var meta = new Paragraph();
+            meta.Inlines.Add(new Run($"N°: {txtNumVente.Text}") { FontWeight = FontWeights.Bold });
+            meta.Inlines.Add(new LineBreak());
+            meta.Inlines.Add(new Run($"Date: {dpDateVente.SelectedDate?.ToString("g") ?? string.Empty}"));
+            meta.Inlines.Add(new LineBreak());
+            if (cbClients.SelectedItem is MonAppGestion.Models.Client c && c.Id != 0)
+            {
+                meta.Inlines.Add(new Run($"Client: {c.Nom}"));
+            }
+            fd.Blocks.Add(meta);
+
+            // Table of products
+            var table = new Table();
+            table.CellSpacing = 0;
+            table.Columns.Add(new TableColumn() { Width = new GridLength(140) }); // name
+            table.Columns.Add(new TableColumn() { Width = new GridLength(50) }); // qty
+            table.Columns.Add(new TableColumn() { Width = new GridLength(60) }); // price
+            table.Columns.Add(new TableColumn() { Width = new GridLength(60) }); // total
+
+            var rowGroup = new TableRowGroup();
+            var headerRow = new TableRow();
+            headerRow.Cells.Add(new TableCell(new Paragraph(new Bold(new Run("Produit"))))) ;
+            headerRow.Cells.Add(new TableCell(new Paragraph(new Bold(new Run("Qte"))))) ;
+            headerRow.Cells.Add(new TableCell(new Paragraph(new Bold(new Run("Prix"))))) ;
+            headerRow.Cells.Add(new TableCell(new Paragraph(new Bold(new Run("Total"))))) ;
+            rowGroup.Rows.Add(headerRow);
+
+            foreach (var l in _lines)
+            {
+                var r = new TableRow();
+                r.Cells.Add(new TableCell(new Paragraph(new Run(l.Nom))));
+                r.Cells.Add(new TableCell(new Paragraph(new Run(l.Qte.ToString()))));
+                r.Cells.Add(new TableCell(new Paragraph(new Run(l.PrixVente.ToString("0.00")))));
+                r.Cells.Add(new TableCell(new Paragraph(new Run(l.Total.ToString("0.00")))));
+                rowGroup.Rows.Add(r);
+            }
+
+            table.RowGroups.Add(rowGroup);
+            fd.Blocks.Add(table);
+
+            // Totals
+            var totals = new Paragraph();
+            totals.TextAlignment = TextAlignment.Right;
+            totals.Inlines.Add(new Run($"Total: {txtTotal.Text}") { FontWeight = FontWeights.Bold });
+            totals.Inlines.Add(new LineBreak());
+            totals.Inlines.Add(new Run($"Versement: {txtVersement.Text}"));
+            // Compute situation (remainder) if possible
+            try
+            {
+                decimal total = decimal.Parse(txtTotal.Text);
+                decimal versement = 0m;
+                decimal.TryParse(txtVersement.Text, out versement);
+                totals.Inlines.Add(new LineBreak());
+                totals.Inlines.Add(new Run($"Reste: {(total - versement):0.00}") { FontWeight = FontWeights.Bold });
+            }
+            catch { }
+            fd.Blocks.Add(totals);
+
+            // Footer
+            fd.Blocks.Add(new Paragraph(new Run("Merci pour votre achat")) { TextAlignment = TextAlignment.Center, Margin = new Thickness(0,12,0,0) });
+
+            // Print
+            var pd = new PrintDialog();
+            if (pd.ShowDialog() == true)
+            {
+                // Use DocumentPaginator to print FlowDocument
+                IDocumentPaginatorSource idp = fd;
+                try
+                {
+                    pd.PrintDocument(idp.DocumentPaginator, "BonDeVente");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erreur impression: " + ex.Message);
+                }
+            }
         }
 
         private class TempDetail : INotifyPropertyChanged

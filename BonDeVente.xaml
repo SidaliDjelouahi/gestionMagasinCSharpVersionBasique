@@ -74,7 +74,10 @@
                     </StackPanel>
                 </Grid>
 
-                <Button x:Name="btnSaveVente" Content="Enregistrer le bon" Click="btnSaveVente_Click" Margin="24,0,0,0" Width="150" Height="64" Background="#007ACC" Foreground="White" VerticalAlignment="Center" />
+                    <StackPanel Orientation="Vertical" Margin="24,0,0,0">
+                        <Button x:Name="btnSaveVente" Content="Enregistrer le bon" Click="btnSaveVente_Click" Width="150" Height="36" Background="#007ACC" Foreground="White" VerticalAlignment="Center" />
+                        <Button x:Name="btnPrint" Content="Imprimer" Click="btnPrint_Click" Width="150" Height="28" Margin="0,8,0,0" />
+                    </StackPanel>
             </StackPanel>
         </Grid>
 

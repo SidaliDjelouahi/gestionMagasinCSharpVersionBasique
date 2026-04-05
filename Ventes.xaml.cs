@@ -25,10 +25,13 @@ namespace MonAppGestion
                         var totals = details.GroupBy(d => d.VenteId)
                             .ToDictionary(g => g.Key, g => g.Sum(x => x.PrixVente * x.Qte));
 
+                        var clients = db.Clients.ToList().ToDictionary(c => c.Id, c => c.Nom);
+
                         var items = ventes.Select(v => new
                         {
                             v.Id,
                             v.NumVente,
+                            ClientName = (v.IdClient.HasValue && clients.ContainsKey(v.IdClient.Value)) ? clients[v.IdClient.Value] : string.Empty,
                             v.Date,
                             Total = totals.ContainsKey(v.Id) ? totals[v.Id] : 0m
                         }).ToList();
