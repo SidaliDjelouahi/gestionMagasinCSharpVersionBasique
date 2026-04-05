@@ -9,6 +9,7 @@
             <TextBlock Text="Menu" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
             <Button x:Name="btnUtilisateurs" Content="Utilisateurs" Margin="0,5" Click="btnUtilisateurs_Click"/>
             <Button x:Name="btnProduits" Content="Produits" Margin="0,5" Click="btnProduits_Click"/>
+            <Button x:Name="btnClients" Content="Clients" Margin="0,5" Click="btnClients_Click"/>
             <Button x:Name="btnVentes" Content="Ventes" Margin="0,5" Click="btnVentes_Click"/>
             <Button x:Name="btnBonDeVente" Content="Bon de vente" Margin="0,5" Click="btnBonDeVente_Click"/>
             <Button x:Name="btnAutre" Content="Autre page" Margin="0,5" Click="btnAutre_Click"/>

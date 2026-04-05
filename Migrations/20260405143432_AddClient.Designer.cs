@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MonAppGestion;
 
@@ -10,9 +11,11 @@ using MonAppGestion;
 namespace C_GS.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260405143432_AddClient")]
+    partial class AddClient
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -100,14 +103,8 @@ namespace C_GS.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("ClientId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateTime>("Date")
                         .HasColumnType("TEXT");
-
-                    b.Property<int?>("IdClient")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("NumVente")
                         .IsRequired()
@@ -117,8 +114,6 @@ namespace C_GS.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ClientId");
 
                     b.ToTable("Ventes");
                 });
@@ -148,15 +143,6 @@ namespace C_GS.Migrations
                     b.HasIndex("VenteId");
 
                     b.ToTable("VenteDetails");
-                });
-
-            modelBuilder.Entity("MonAppGestion.Models.Vente", b =>
-                {
-                    b.HasOne("MonAppGestion.Models.Client", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId");
-
-                    b.Navigation("Client");
                 });
 
             modelBuilder.Entity("MonAppGestion.Models.VenteDetail", b =>

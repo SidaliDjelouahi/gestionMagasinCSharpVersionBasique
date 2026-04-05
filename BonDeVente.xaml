@@ -30,6 +30,17 @@
                     <DatePicker x:Name="dpDateVente" Width="200" />
                 </StackPanel>
 
+                <Grid Margin="0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="90" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Client:" Grid.Column="0" VerticalAlignment="Center" />
+                    <ComboBox x:Name="cbClients" Grid.Column="1" DisplayMemberPath="Nom" SelectedValuePath="Id" HorizontalAlignment="Stretch" />
+                    <Button x:Name="btnNewClient" Grid.Column="2" Content="Nouveau" Width="80" Margin="8,0,0,0" Click="btnNewClient_Click" />
+                </Grid>
+
                 <Separator Margin="0,8" />
 
                 <TextBlock Text="Ajouter ligne" FontWeight="Bold" Margin="0,6" />

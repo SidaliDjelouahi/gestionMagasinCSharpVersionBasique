@@ -12,6 +12,10 @@ namespace MonAppGestion.Models
         // Nouveau : montant versé pour cette vente
         public decimal Versement { get; set; } = 0m;
 
+        // Nouveau : référence au client (nullable)
+        public int? IdClient { get; set; }
+        public Client? Client { get; set; }
+
         public List<VenteDetail> Details { get; set; } = new List<VenteDetail>();
     }
 }

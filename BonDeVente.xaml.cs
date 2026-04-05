@@ -16,6 +16,7 @@ namespace MonAppGestion
     {
         private List<TempDetail> _lines = new List<TempDetail>();
         private List<Product> _allProducts = new List<Product>();
+        private List<Client> _allClients = new List<Client>();
         private Product? _selectedProduct = null;
         private TempDetail? _editingLine = null;
         private bool _versementEdited = false;
@@ -25,12 +26,35 @@ namespace MonAppGestion
         {
             InitializeComponent();
             ChargerProduits();
+            ChargerClients();
             dpDateVente.SelectedDate = DateTime.Today;
             _versementEdited = false;
             _settingVersementProgrammatically = true;
             txtVersement.Text = "0.00";
             _settingVersementProgrammatically = false;
             RefreshDetailsGrid();
+        }
+
+        private void ChargerClients()
+        {
+            using (var db = new AppDbContext())
+            {
+                _allClients = db.Clients.OrderBy(c => c.Nom).ToList();
+                cbClients.ItemsSource = _allClients;
+            }
+        }
+
+        private void btnNewClient_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new NewClientWindow();
+            dlg.Owner = Window.GetWindow(this);
+            var res = dlg.ShowDialog();
+            if (res == true)
+            {
+                // reload clients and select newly created client
+                ChargerClients();
+                try { cbClients.SelectedValue = dlg.CreatedClientId; } catch { }
+            }
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -409,13 +433,18 @@ namespace MonAppGestion
                         Date = dpDateVente.SelectedDate.Value,
                         Versement = versement
                     };
+                    // attach selected client if any
+                    if (cbClients.SelectedItem is Client selClient)
+                    {
+                        vente.IdClient = selClient.Id;
+                    }
                     db.Ventes.Add(vente);
                     db.SaveChanges();
 
                     // ensure Versement persisted (fallback in case EF mapping issues)
                     try
                     {
-                        db.Database.ExecuteSqlInterpolated($"UPDATE Ventes SET Versement = {versement} WHERE Id = {vente.Id};");
+                        db.Database.ExecuteSqlInterpolated($"UPDATE Ventes SET Versement = {versement}, IdClient = {vente.IdClient} WHERE Id = {vente.Id};");
                     }
                     catch { }
 

@@ -39,6 +39,11 @@ namespace MonAppGestion
             MainFrame.Navigate(new BonDeVente());
         }
 
+        private void btnClients_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new Clients());
+        }
+
         private void btnLogout_Click(object sender, RoutedEventArgs e)
         {
             // Ferme le Dashboard et retourne à la fenêtre de connexion

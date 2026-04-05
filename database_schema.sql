@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS Ventes (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     NumVente TEXT,
     Date TEXT,
-    Versement REAL DEFAULT 0
+    Versement REAL DEFAULT 0,
+    IdClient INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS VenteDetails (
@@ -31,4 +32,11 @@ CREATE TABLE IF NOT EXISTS VenteDetails (
     IdProduit INTEGER,
     PrixVente REAL,
     Qte INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS Clients (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Nom TEXT NOT NULL,
+    Adresse TEXT,
+    Telephone TEXT
 );
