@@ -10,6 +10,7 @@
                 <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="80" />
                 <DataGridTextColumn Header="NumVente" Binding="{Binding NumVente}" Width="*" />
                 <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="150" />
+                <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat=N2}" Width="120" />
                 <DataGridTemplateColumn Header="Actions" Width="120">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

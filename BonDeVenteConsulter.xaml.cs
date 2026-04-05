@@ -44,6 +44,7 @@ namespace MonAppGestion
                     {
                         txtNumVente.Text = vente.NumVente;
                         txtDateVente.Text = vente.Date.ToString();
+                        try { txtVersement.Text = vente.Versement.ToString("0.00"); } catch { txtVersement.Text = "0.00"; }
                     }
 
                     var details = (from d in db.VenteDetails
@@ -57,11 +58,53 @@ namespace MonAppGestion
                                        Qte = d.Qte,
                                        Total = d.PrixVente * d.Qte
                                    }).ToList();
-
                     dgVenteDetails.ItemsSource = details;
+                    try
+                    {
+                        var total = details.Sum(x => x.Total);
+                        txtTotalVente.Text = total.ToString("0.00");
+                    }
+                    catch { txtTotalVente.Text = "0.00"; }
                 }
             }
             catch { }
+        }
+
+        private void btnUpdateVersement_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtVersement.Text))
+            {
+                MessageBox.Show("Entrez un montant de versement valide.");
+                return;
+            }
+
+            if (!decimal.TryParse(txtVersement.Text, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.CurrentCulture, out var v))
+            {
+                var alt = txtVersement.Text?.Replace(',', '.');
+                if (!decimal.TryParse(alt, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out v))
+                {
+                    MessageBox.Show("Montant de versement invalide.");
+                    return;
+                }
+            }
+
+            try
+            {
+                using (var db = new AppDbContext())
+                {
+                    var vente = db.Ventes.Find(_venteId);
+                    if (vente != null)
+                    {
+                        vente.Versement = v;
+                        db.SaveChanges();
+                        MessageBox.Show("Versement mis à jour.");
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show("Erreur lors de la mise à jour : " + ex.Message);
+            }
         }
 
         private void btnBack_Click(object sender, RoutedEventArgs e)

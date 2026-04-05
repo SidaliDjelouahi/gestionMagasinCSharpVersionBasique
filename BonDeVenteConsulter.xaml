@@ -17,17 +17,26 @@
             <TextBlock x:Name="txtDateVente" Margin="6,0" />
         </StackPanel>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,8,0,8">
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,8,0,8" VerticalAlignment="Center">
             <Button Content="Retour" Click="btnBack_Click" Width="100" />
             <Button x:Name="btnDeleteVente" Content="Supprimer le bon" Click="btnDeleteVente_Click" Width="160" Margin="8,0,0,0" />
+            <StackPanel Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="Total du bon :" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <TextBox x:Name="txtTotalVente" Width="120" IsEnabled="False" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="Versement :" VerticalAlignment="Center" Margin="12,0,6,0" />
+                <TextBox x:Name="txtVersement" Width="120" />
+                <Button x:Name="btnUpdateVersement" Content="Mettre à jour" Click="btnUpdateVersement_Click" Margin="8,0,0,0" />
+            </StackPanel>
         </StackPanel>
 
         <DataGrid x:Name="dgVenteDetails" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Produit" Binding="{Binding Nom}" Width="*" />
-                <DataGridTextColumn Header="Prix" Binding="{Binding PrixVente}" Width="120" />
-                <DataGridTextColumn Header="Qte" Binding="{Binding Qte}" Width="80" />
-                <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="120" />
+                <DataGridTextColumn Header="Prix" Binding="{Binding PrixVente}" Width="120" IsReadOnly="True" />
+                <DataGridTextColumn Header="Qte" Binding="{Binding Qte}" Width="80" IsReadOnly="True" />
+                <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="120" IsReadOnly="True" />
                     <DataGridTemplateColumn Header="Actions" Width="140">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>

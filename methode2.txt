@@ -1,1 +1,15 @@
-1- produits , suppression : il verifie si produit existe dans table ventesDetails , il refuse la suppression
+1- produits , suppression : il verifie si produit existe dans table ventesDetails , 
+il refuse la suppression
+
+2- ventes -> consulter : autorise suppression du bon et retoure dustock ,
+autorise suppresion d'un produit du stock ,
+mais n'autorise pas ajout d'un article ou modifier quantite, si il veux ajouter il sera dans un nouveau bon , 
+si on autorise l'ajout d'un article il perturbe l;historique des achats et des ventes et 
+date d'expiration
+supposant modifier apres un mois , le stock est chager par exemple deux fois , 
+l'historique du stock et le stock est different, eliminer l'option est plus securise
+ 
+3- ventes -> consulter : autorise changement du versementparceque qu'on supprime un article il 
+se peux qu'une somme est remboursse ou ajouterdu credit
+
+
