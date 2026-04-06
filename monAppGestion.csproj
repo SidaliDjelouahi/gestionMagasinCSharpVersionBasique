@@ -8,6 +8,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <!-- Disable SDK auto-generation of assembly attributes to avoid duplicates -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,12 +19,14 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
+      <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 
   <!-- Exclude helper/utility projects placed under the repository to avoid being compiled into the WPF app -->
   <ItemGroup>
     <Compile Remove="querydb\**\*.cs" />
     <Compile Remove="dbinspect\**\*.cs" />
+    <Compile Remove="tools\**\*.cs" />
   </ItemGroup>
 
 </Project>
