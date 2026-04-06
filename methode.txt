@@ -1,3 +1,99 @@
+C'est une excellente étape pour professionnaliser votre logiciel. Pour gérer à la fois la sécurité par matériel (HDD SN), la période d'essai et la distinction entre version gratuite et payante, vous devez structurer votre logique de validation dès le démarrage.
+
+Voici une approche robuste pour implémenter cela dans votre application WPF :
+
+---
+
+## 1. Récupération de l'identifiant unique (HDD Serial)
+Pour lier le logiciel à une machine, utilisez l'espace de noms `System.Management`. Le numéro de série du disque dur est plus stable que l'adresse MAC.
+
+```csharp
+using System.Management;
+
+public string GetHDDSerialNumber()
+{
+    string sn = "";
+    ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT SerialNumber FROM Win32_PhysicalMedia");
+    foreach (ManagementObject wmi_HD in searcher.Get())
+    {
+        if (wmi_HD["SerialNumber"] != null)
+            sn = wmi_HD["SerialNumber"].ToString().Trim();
+        break; // On prend le premier disque physique
+    }
+    return sn;
+}
+```
+
+## 2. Gestion de la Période d'Essai (Trial Mode)
+Pour la version en ligne, vous ne pouvez pas simplement stocker la date dans un fichier texte (trop facile à modifier). Voici deux méthodes :
+
+* **Registre Windows :** Stockez la date du premier lancement dans une clé masquée.
+* **Fichier de licence chiffré :** Créez un petit fichier local qui contient la date d'installation chiffrée en AES.
+
+**Exemple de logique de vérification :**
+```csharp
+DateTime installDate = GetInstallDate(); // À lire depuis le registre ou fichier chiffré
+int trialDays = 30;
+
+if (DateTime.Now > installDate.AddDays(trialDays))
+{
+    // Mode essai expiré
+    ShowExpiredMessage();
+}
+```
+
+## 3. Système de Licence (Version Payante)
+Pour éviter d'envoyer un exécutable différent à chaque client, utilisez un **Fichier de Licence (`.lic`)**.
+
+1.  **Le client** vous envoie son `HDD Serial`.
+2.  **Vous** générez une clé qui contient : `HDD_Serial + Date_Expiration`.
+3.  **L'application** au démarrage lit ce fichier, le déchiffre, et compare le `HDD Serial` inscrit dedans avec celui de la machine actuelle.
+
+---
+
+## 4. Architecture de la Validation au Login
+Dans votre `MainWindow.xaml.cs`, avant de vérifier le mot de passe, insérez cette hiérarchie de contrôle :
+
+| Étape | Action | Résultat si Échec |
+| :--- | :--- | :--- |
+| **Vérification Licence** | Existe-t-il un fichier `.lic` valide pour ce HDD ? | Passer au mode "Essai". |
+| **Vérification Essai** | La période de 30 jours est-elle dépassée ? | Bloquer l'accès / Afficher bouton "Acheter". |
+| **Authentification** | Username / Password corrects ? | Accès au Dashboard. |
+
+---
+
+## 5. Stratégie de Déploiement (Online vs Client)
+
+Pour gérer les deux versions sans maintenir deux codes sources différents, utilisez les **Directives de Compilation** :
+
+```csharp
+#if FREE_VERSION
+    // Code spécifique à la version d'essai (ex: bouton "Acheter" visible)
+    CheckTrialStatus();
+#else
+    // Code pour la version payante (Vérification HDD stricte)
+    ValidateLicenseFile();
+#endif
+```
+
+### Conseils de sécurité :
+* **Obfuscation :** Utilisez un outil comme *ConfuserEx* pour protéger votre code C#. Sans cela, n'importe qui peut lire votre algorithme de vérification avec un décompilateur (dnSpy).
+* **Serveur de temps :** Pour éviter que le client ne change la date de son PC pour tricher sur l'essai, essayez de récupérer l'heure via une requête HTTP rapide sur un serveur de temps (NTP) si internet est disponible.
+
+Voulez-vous que je vous aide à rédiger la fonction de chiffrement pour créer votre propre générateur de clés ?
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------
+
 "Je veux implémenter des versions Basique et Premium. Peux-tu m'expliquer 
 comment modifier mon fichier .csproj pour ajouter une constante de compilation
  PREMIUM_VERSION quand je choisis une configuration spécifique ?"

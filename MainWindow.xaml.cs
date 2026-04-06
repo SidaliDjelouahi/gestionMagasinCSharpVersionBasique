@@ -56,6 +56,8 @@ private void SeedDatabase()
            if (user != null)
             {
                 // On crée l'objet Dashboard (attention à la majuscule)
+                // store current user in session for role-based UI
+                Session.CurrentUser = user;
                 Dashboard ds = new Dashboard();
                 
                 // On affiche la nouvelle fenêtre

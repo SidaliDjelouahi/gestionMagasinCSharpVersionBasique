@@ -9,8 +9,58 @@ namespace MonAppGestion
         {
             InitializeComponent();
 
+            // Role-based button visibility
+            ApplyRoleVisibility();
+
             // Afficher la page BonDeVente par défaut
             MainFrame.Navigate(new BonDeVente());
+        }
+
+        private void ApplyRoleVisibility()
+        {
+            var role = Session.CurrentUser?.Rank?.ToLowerInvariant() ?? string.Empty;
+
+            // Default: show all
+            btnUtilisateurs.Visibility = Visibility.Visible;
+            btnProduits.Visibility = Visibility.Visible;
+            btnClients.Visibility = Visibility.Visible;
+            btnBonAchat.Visibility = Visibility.Visible;
+            btnAchats.Visibility = Visibility.Visible;
+            btnAnalyse.Visibility = Visibility.Visible;
+            btnSauvegardeDB.Visibility = Visibility.Visible;
+            btnFournisseurs.Visibility = Visibility.Visible;
+            btnVentes.Visibility = Visibility.Visible;
+            btnBonDeVente.Visibility = Visibility.Visible;
+            btnAutre.Visibility = Visibility.Visible;
+
+            if (role == "assistant")
+            {
+                // assistant: hide Sauvegarde DB, Analyse, Produits, Fournisseurs
+                // also hide Utilisateurs
+                btnUtilisateurs.Visibility = Visibility.Collapsed;
+                btnSauvegardeDB.Visibility = Visibility.Collapsed;
+                btnAnalyse.Visibility = Visibility.Collapsed;
+                btnProduits.Visibility = Visibility.Collapsed;
+                btnFournisseurs.Visibility = Visibility.Collapsed;
+            }
+            else if (role == "user")
+            {
+                // user: only show Ventes and Bon de vente
+                btnUtilisateurs.Visibility = Visibility.Collapsed;
+                btnProduits.Visibility = Visibility.Collapsed;
+                btnClients.Visibility = Visibility.Collapsed;
+                btnBonAchat.Visibility = Visibility.Collapsed;
+                btnAchats.Visibility = Visibility.Collapsed;
+                btnAnalyse.Visibility = Visibility.Collapsed;
+                btnSauvegardeDB.Visibility = Visibility.Collapsed;
+                btnFournisseurs.Visibility = Visibility.Collapsed;
+                btnAutre.Visibility = Visibility.Collapsed;
+                // keep btnVentes and btnBonDeVente visible
+            }
+            else
+            {
+                // developer/admin: show all (do nothing)
+            }
         }
 
         private void btnUtilisateurs_Click(object sender, RoutedEventArgs e)

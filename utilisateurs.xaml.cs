@@ -28,7 +28,7 @@ namespace MonAppGestion
 
         private void btnAjouter_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtNewUser.Text) || string.IsNullOrWhiteSpace(txtNewPass.Text))
+            if (string.IsNullOrWhiteSpace(txtNewUser.Text) || string.IsNullOrWhiteSpace(txtNewPass.Text) || cbRank.SelectedItem==null)
             {
                 MessageBox.Show("Veuillez remplir tous les champs.");
                 return;
@@ -36,7 +36,7 @@ namespace MonAppGestion
 
             using (var db = new AppDbContext())
             {
-                if (_editingUserId.HasValue)
+                    if (_editingUserId.HasValue)
                 {
                     // Update existing user
                     var existing = db.Users.FirstOrDefault(u => u.Id == _editingUserId.Value);
@@ -44,6 +44,7 @@ namespace MonAppGestion
                     {
                         existing.Username = txtNewUser.Text;
                         existing.Password = txtNewPass.Text;
+                            existing.Rank = ((ComboBoxItem)cbRank.SelectedItem).Content.ToString();
                         db.SaveChanges();
                     }
                     _editingUserId = null;
@@ -51,7 +52,7 @@ namespace MonAppGestion
                 }
                 else
                 {
-                    var nvxUser = new User { Username = txtNewUser.Text, Password = txtNewPass.Text };
+                    var nvxUser = new User { Username = txtNewUser.Text, Password = txtNewPass.Text, Rank = ((ComboBoxItem)cbRank.SelectedItem).Content.ToString() };
                     db.Users.Add(nvxUser);
                     db.SaveChanges();
                 }
@@ -96,6 +97,15 @@ namespace MonAppGestion
             // Remplir les champs du haut pour modification
             txtNewUser.Text = selectedUser.Username;
             txtNewPass.Text = selectedUser.Password;
+            // Select rank in combobox
+            foreach (ComboBoxItem it in cbRank.Items)
+            {
+                if (string.Equals(it.Content.ToString(), selectedUser.Rank, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    cbRank.SelectedItem = it;
+                    break;
+                }
+            }
             _editingUserId = selectedUser.Id;
             btnAjouter.Content = "Enregistrer";
         }

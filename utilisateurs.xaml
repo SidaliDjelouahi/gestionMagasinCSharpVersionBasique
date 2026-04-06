@@ -22,6 +22,15 @@
                 <TextBlock Text="Mot de passe:"/>
                 <TextBox x:Name="txtNewPass" Width="150"/>
             </StackPanel>
+            <StackPanel Margin="0,0,10,0">
+                <TextBlock Text="Rôle:"/>
+                <ComboBox x:Name="cbRank" Width="150">
+                    <ComboBoxItem Content="developpeur" />
+                    <ComboBoxItem Content="admin" />
+                    <ComboBoxItem Content="assistant" />
+                    <ComboBoxItem Content="user" />
+                </ComboBox>
+            </StackPanel>
             <Button x:Name="btnAjouter" Content="Ajouter" Click="btnAjouter_Click" Width="100" Height="30" VerticalAlignment="Bottom" Background="Green" Foreground="White"/>
         </StackPanel>
 
