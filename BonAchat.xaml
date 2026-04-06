@@ -49,8 +49,9 @@
                         <TextBox x:Name="txtProductSearch" Width="180" Height="24" KeyUp="txtProductSearch_KeyUp" KeyDown="txtProductSearch_KeyDown" MouseEnter="txtProductSearch_MouseEnter" />
                         <ListBox x:Name="lbProductSuggestions" Width="180" Height="120" Visibility="Collapsed"
                                  DisplayMemberPath="Nom" SelectionChanged="lbProductSuggestions_SelectionChanged" KeyDown="lbProductSuggestions_KeyDown"/>
+                        <Button x:Name="btnNewProduct" Content="Nouveau produit" Width="80" Height="24" Click="btnNewProduct_Click" Margin="0,8,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
                     </StackPanel>
-                    <TextBox x:Name="txtQteLine" Width=" 40" Height="24" Margin="8,0" VerticalAlignment="Top" />
+                    <TextBox x:Name="txtQteLine" Width="40" Height="24" Margin="8,0" VerticalAlignment="Top" />
                     <TextBox x:Name="txtPrixLine" Width="60" Height="24" Margin="8,0" VerticalAlignment="Top" />
                     <Button x:Name="btnAddLine" Content="Ajouter" Width="80" Height="24" Click="btnAddLine_Click" Margin="8,0" VerticalAlignment="Top" />
                 </StackPanel>
@@ -62,13 +63,14 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-
+                    
                     <StackPanel Orientation="Vertical" Grid.Row="0">
                         <TextBlock Text="Versement" FontWeight="Bold" Margin="0,0,0,4" />
                         <TextBox x:Name="txtVersement" Width="220" Height="40" FontSize="18" TextAlignment="Right" VerticalContentAlignment="Center" TextChanged="txtVersement_TextChanged" />
                     </StackPanel>
 
                     <StackPanel Orientation="Vertical" Grid.Row="1" Margin="0,8,0,0">
+                        
                         <TextBlock Text="Total du Bon" FontWeight="Bold" Margin="0,0,0,4" />
                         <TextBox x:Name="txtTotal" Width="220" Height="64" FontSize="40" IsEnabled="False" TextAlignment="Right" VerticalContentAlignment="Center" />
                     </StackPanel>
