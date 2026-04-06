@@ -10,6 +10,7 @@
             <Button x:Name="btnUtilisateurs" Content="Utilisateurs" Margin="0,5" Click="btnUtilisateurs_Click"/>
             <Button x:Name="btnProduits" Content="Produits" Margin="0,5" Click="btnProduits_Click"/>
             <Button x:Name="btnClients" Content="Clients" Margin="0,5" Click="btnClients_Click"/>
+            <Button x:Name="btnBonAchat" Content="Bon d'achat" Margin="0,5" Click="btnBonAchat_Click"/>
             <Button x:Name="btnFournisseurs" Content="Fournisseurs" Margin="0,5" Click="btnFournisseurs_Click"/>
             <Button x:Name="btnVentes" Content="Ventes" Margin="0,5" Click="btnVentes_Click"/>
             <Button x:Name="btnBonDeVente" Content="Bon de vente" Margin="0,5" Click="btnBonDeVente_Click"/>
