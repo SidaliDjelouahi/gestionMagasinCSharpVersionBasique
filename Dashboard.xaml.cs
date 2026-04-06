@@ -54,6 +54,11 @@ namespace MonAppGestion
             MainFrame.Navigate(new BonAchat());
         }
 
+        private void btnAchats_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new Achats());
+        }
+
         private void btnLogout_Click(object sender, RoutedEventArgs e)
         {
             // Ferme le Dashboard et retourne à la fenêtre de connexion

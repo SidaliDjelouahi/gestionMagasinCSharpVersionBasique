@@ -1,0 +1,54 @@
+<Page x:Class="MonAppGestion.BonAchatConsulter"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Consulter Bon d'achat"
+      Loaded="Page_Loaded">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0" VerticalAlignment="Center">
+            <TextBlock Text="Numéro : " FontWeight="Bold" />
+            <TextBlock x:Name="txtNumAchat" Margin="6,0" />
+            <TextBlock Text="Date : " FontWeight="Bold" Margin="20,0,0,0" />
+            <TextBlock x:Name="txtDateAchat" Margin="6,0" />
+            <TextBlock Text="Fournisseur : " FontWeight="Bold" Margin="20,0,0,0" />
+            <TextBlock x:Name="txtFournisseurName" Margin="6,0" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,8,0,8" VerticalAlignment="Center">
+            <Button Content="Retour" Click="btnBack_Click" Width="100" />
+            <Button x:Name="btnDeleteAchat" Content="Supprimer le bon" Click="btnDeleteAchat_Click" Width="160" Margin="8,0,0,0" />
+            <StackPanel Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="Total du bon :" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <TextBox x:Name="txtTotalAchat" Width="120" IsEnabled="False" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="Versement :" VerticalAlignment="Center" Margin="12,0,6,0" />
+                <TextBox x:Name="txtVersement" Width="120" />
+                <Button x:Name="btnUpdateVersement" Content="Mettre à jour" Click="btnUpdateVersement_Click" Margin="8,0,0,0" />
+            </StackPanel>
+        </StackPanel>
+
+        <DataGrid x:Name="dgAchatDetails" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Produit" Binding="{Binding Nom}" Width="*" />
+                <DataGridTextColumn Header="Prix" Binding="{Binding PrixAchat}" Width="120" IsReadOnly="True" />
+                <DataGridTextColumn Header="Qte" Binding="{Binding Qte}" Width="80" IsReadOnly="True" />
+                <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="120" IsReadOnly="True" />
+                <DataGridTemplateColumn Header="Actions" Width="140">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Content="Supprimer" Click="Action_DeleteDetail_Click" Margin="4,0" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

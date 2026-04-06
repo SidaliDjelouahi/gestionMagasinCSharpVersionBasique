@@ -177,8 +177,9 @@ namespace MonAppGestion
                             txtProductSearch.Clear();
                             lbProductSuggestions.Visibility = Visibility.Collapsed;
                             _selectedProduct = chosen;
-                            txtPrixLine.Text = chosen.PrixAchat.ToString();
-                            txtQteLine.Text = "1";
+                            // leave quantity and price inputs empty for manual entry
+                            try { txtPrixLine.Clear(); } catch { }
+                            try { txtQteLine.Clear(); } catch { }
                             txtProductSearch.Focus();
                             Keyboard.Focus(txtProductSearch);
                             e.Handled = true;
@@ -209,8 +210,7 @@ namespace MonAppGestion
 
         private void txtProductSearch_KeyDown(object sender, KeyEventArgs e)
         {
-            // Switch focus to suggestions with Down arrow instead of Shift
-            if (e.Key == Key.Down)
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
             {
                 if (lbProductSuggestions.Items.Count > 0)
                 {
