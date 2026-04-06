@@ -47,3 +47,18 @@ CREATE TABLE IF NOT EXISTS Fournisseurs (
     Adresse TEXT,
     Telephone TEXT
 );
+
+CREATE TABLE IF NOT EXISTS Achats (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    NumAchat TEXT,
+    Date TEXT,
+    IdFournisseur INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS AchatDetails (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    IdAchat INTEGER,
+    IdProduit INTEGER,
+    PrixAchat REAL,
+    Qte INTEGER
+);
