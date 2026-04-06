@@ -181,9 +181,9 @@ namespace MonAppGestion
                             txtProductSearch.Clear();
                             lbProductSuggestions.Visibility = Visibility.Collapsed;
                             _selectedProduct = chosen;
-                            // optionally set price and qty fields for user
-                            txtPrixLine.Text = chosen.PrixVente.ToString();
-                            txtQteLine.Text = "1";
+                            // leave quantity and price inputs empty for manual entry (like BonAchat behavior)
+                            try { txtPrixLine.Clear(); } catch { }
+                            try { txtQteLine.Clear(); } catch { }
                             // After adding/incrementing, return focus to the product search box for quick next entry
                             txtProductSearch.Focus();
                             Keyboard.Focus(txtProductSearch);
