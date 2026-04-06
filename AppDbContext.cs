@@ -10,6 +10,7 @@ namespace MonAppGestion
         public DbSet<MonAppGestion.Models.Vente> Ventes { get; set; }
         public DbSet<MonAppGestion.Models.VenteDetail> VenteDetails { get; set; }
         public DbSet<MonAppGestion.Models.Client> Clients { get; set; }
+        public DbSet<MonAppGestion.Models.Fournisseur> Fournisseurs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {

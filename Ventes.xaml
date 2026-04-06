@@ -12,10 +12,13 @@
                     <DataGridTextColumn Header="Client" Binding="{Binding ClientName}" Width="200" />
                 <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="150" />
                 <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat=N2}" Width="120" />
-                <DataGridTemplateColumn Header="Actions" Width="120">
+                <DataGridTemplateColumn Header="Actions" Width="180">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Consulter" Click="Action_Consulter_Click" Padding="6,2" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Content="Imprimer" Click="Action_Print_Click" Padding="6,2" Margin="0,0,6,0" />
+                                <Button Content="Consulter" Click="Action_Consulter_Click" Padding="6,2" />
+                            </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

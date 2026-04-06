@@ -48,7 +48,24 @@ namespace MonAppGestion
                 cbClients.ItemsSource = _allClients;
                 // select the placeholder by default
                 cbClients.SelectedIndex = 0;
+                try { txtClientName.Text = string.Empty; } catch { }
             }
+        }
+
+        private void cbClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (cbClients.SelectedItem is Client c && c.Id != 0)
+                {
+                    txtClientName.Text = c.Nom;
+                }
+                else
+                {
+                    txtClientName.Text = string.Empty;
+                }
+            }
+            catch { }
         }
 
         private void btnNewClient_Click(object sender, RoutedEventArgs e)

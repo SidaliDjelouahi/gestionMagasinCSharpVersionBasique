@@ -37,9 +37,11 @@
                         <ColumnDefinition Width="90" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="Client:" Grid.Column="0" VerticalAlignment="Center" />
-                    <ComboBox x:Name="cbClients" Grid.Column="1" DisplayMemberPath="Nom" SelectedValuePath="Id" HorizontalAlignment="Stretch" />
+                    <ComboBox x:Name="cbClients" Grid.Column="1" DisplayMemberPath="Nom" SelectedValuePath="Id" HorizontalAlignment="Stretch" SelectionChanged="cbClients_SelectionChanged" />
                     <Button x:Name="btnNewClient" Grid.Column="2" Content="Nouveau" Width="80" Margin="8,0,0,0" Click="btnNewClient_Click" />
                 </Grid>
+
+                <TextBlock x:Name="txtClientName" Text="" FontStyle="Italic" Foreground="Gray" Margin="0,4,0,0" />
 
                 <Separator Margin="0,8" />
 

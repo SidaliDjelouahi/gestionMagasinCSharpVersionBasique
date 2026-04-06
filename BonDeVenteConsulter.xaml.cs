@@ -1,4 +1,5 @@
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using System.Windows;
 using System.Windows.Controls;
 using MonAppGestion.Models;
@@ -39,13 +40,29 @@ namespace MonAppGestion
             {
                 using (var db = new AppDbContext())
                 {
-                    var vente = db.Ventes.Find(_venteId);
-                    if (vente != null)
-                    {
-                        txtNumVente.Text = vente.NumVente;
-                        txtDateVente.Text = vente.Date.ToString();
-                        try { txtVersement.Text = vente.Versement.ToString("0.00"); } catch { txtVersement.Text = "0.00"; }
-                    }
+                        var vente = db.Ventes.Include("Client").FirstOrDefault(v => v.Id == _venteId);
+                        if (vente != null)
+                        {
+                            txtNumVente.Text = vente.NumVente;
+                            txtDateVente.Text = vente.Date.ToString();
+                            try { txtVersement.Text = vente.Versement.ToString("0.00"); } catch { txtVersement.Text = "0.00"; }
+                            // display client name if available
+                            try
+                            {
+                                if (vente.Client != null)
+                                    txtClientName.Text = vente.Client.Nom;
+                                else if (vente.IdClient.HasValue && vente.IdClient.Value != 0)
+                                {
+                                    var cl = db.Clients.Find(vente.IdClient.Value);
+                                    txtClientName.Text = cl?.Nom ?? string.Empty;
+                                }
+                                else
+                                {
+                                    txtClientName.Text = string.Empty;
+                                }
+                            }
+                            catch { txtClientName.Text = string.Empty; }
+                        }
 
                     var details = (from d in db.VenteDetails
                                    where d.VenteId == _venteId

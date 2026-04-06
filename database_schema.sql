@@ -40,3 +40,10 @@ CREATE TABLE IF NOT EXISTS Clients (
     Adresse TEXT,
     Telephone TEXT
 );
+
+CREATE TABLE IF NOT EXISTS Fournisseurs (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Nom TEXT NOT NULL,
+    Adresse TEXT,
+    Telephone TEXT
+);
