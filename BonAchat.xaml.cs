@@ -151,6 +151,8 @@ namespace MonAppGestion
                     lbProductSuggestions.Visibility = Visibility.Visible;
                     if (e.Key == Key.Enter)
                     {
+                        // If the suggestions ListBox currently has keyboard focus, let its handler process Enter
+                        if (lbProductSuggestions.IsKeyboardFocusWithin) return;
                         Product? chosen = null;
                         var exact = filtered.FirstOrDefault(p => string.Equals(p.Nom, text, StringComparison.OrdinalIgnoreCase)
                             || string.Equals(p.Code, text, StringComparison.OrdinalIgnoreCase));
