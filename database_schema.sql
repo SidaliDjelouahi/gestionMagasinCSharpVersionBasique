@@ -52,7 +52,9 @@ CREATE TABLE IF NOT EXISTS Achats (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     NumAchat TEXT,
     Date TEXT,
-    IdFournisseur INTEGER
+    IdFournisseur INTEGER,
+    Versement REAL DEFAULT 0,
+    FOREIGN KEY(IdFournisseur) REFERENCES Fournisseurs(Id)
 );
 
 CREATE TABLE IF NOT EXISTS AchatDetails (
