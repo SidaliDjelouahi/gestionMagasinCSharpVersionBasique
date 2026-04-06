@@ -59,6 +59,29 @@ namespace MonAppGestion
             ChargerFournisseurs();
         }
 
+        private void btnNewProduct_Click(object sender, RoutedEventArgs e)
+        {
+            // Open Produits page in a dialog window for quick add
+            var wnd = new Window { Title = "Produits", Width = 700, Height = 500, Owner = Window.GetWindow(this) };
+            wnd.Content = new Produits();
+            wnd.ShowDialog();
+            // reload products and prefill the product search with the last added product if any
+            ChargerProduits();
+            try
+            {
+                var last = _allProducts.OrderByDescending(p => p.Id).FirstOrDefault();
+                if (last != null)
+                {
+                    _selectedProduct = last;
+                    txtProductSearch.Text = last.Nom;
+                    txtPrixLine.Text = last.PrixAchat.ToString("0.00");
+                    txtQteLine.Focus();
+                    Keyboard.Focus(txtQteLine);
+                }
+            }
+            catch { }
+        }
+
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             try
@@ -234,6 +257,42 @@ namespace MonAppGestion
                     lbProductSuggestions.Visibility = Visibility.Collapsed;
                     txtProductSearch.Focus();
                     Keyboard.Focus(txtProductSearch);
+                    e.Handled = true;
+                }
+            }
+            catch { }
+        }
+
+        private void txtQteLine_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                if (e.Key == Key.Enter)
+                {
+                    if (string.IsNullOrWhiteSpace(txtQteLine.Text))
+                        txtQteLine.Text = "1";
+                    if (string.IsNullOrWhiteSpace(txtPrixLine.Text) && _selectedProduct != null)
+                        txtPrixLine.Text = _selectedProduct.PrixAchat.ToString("0.00");
+
+                    btnAddLine_Click(btnAddLine, new RoutedEventArgs());
+                    e.Handled = true;
+                }
+            }
+            catch { }
+        }
+
+        private void txtPrixLine_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                if (e.Key == Key.Enter)
+                {
+                    if (string.IsNullOrWhiteSpace(txtQteLine.Text))
+                        txtQteLine.Text = "1";
+                    if (string.IsNullOrWhiteSpace(txtPrixLine.Text) && _selectedProduct != null)
+                        txtPrixLine.Text = _selectedProduct.PrixAchat.ToString("0.00");
+
+                    btnAddLine_Click(btnAddLine, new RoutedEventArgs());
                     e.Handled = true;
                 }
             }

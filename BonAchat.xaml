@@ -51,8 +51,8 @@
                                  DisplayMemberPath="Nom" SelectionChanged="lbProductSuggestions_SelectionChanged" KeyDown="lbProductSuggestions_KeyDown"/>
                         <Button x:Name="btnNewProduct" Content="Nouveau produit" Width="80" Height="24" Click="btnNewProduct_Click" Margin="0,8,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
                     </StackPanel>
-                    <TextBox x:Name="txtQteLine" Width="40" Height="24" Margin="8,0" VerticalAlignment="Top" />
-                    <TextBox x:Name="txtPrixLine" Width="60" Height="24" Margin="8,0" VerticalAlignment="Top" />
+                    <TextBox x:Name="txtQteLine" Width="40" Height="24" Margin="8,0" VerticalAlignment="Top" KeyDown="txtQteLine_KeyDown" />
+                    <TextBox x:Name="txtPrixLine" Width="60" Height="24" Margin="8,0" VerticalAlignment="Top" KeyDown="txtPrixLine_KeyDown" />
                     <Button x:Name="btnAddLine" Content="Ajouter" Width="80" Height="24" Click="btnAddLine_Click" Margin="8,0" VerticalAlignment="Top" />
                 </StackPanel>
             </StackPanel>
