@@ -151,8 +151,6 @@ namespace MonAppGestion
                     lbProductSuggestions.Visibility = Visibility.Visible;
                     if (e.Key == Key.Enter)
                     {
-                        // If the suggestions ListBox currently has keyboard focus, let its handler process Enter
-                        if (lbProductSuggestions.IsKeyboardFocusWithin) return;
                         Product? chosen = null;
                         var exact = filtered.FirstOrDefault(p => string.Equals(p.Nom, text, StringComparison.OrdinalIgnoreCase)
                             || string.Equals(p.Code, text, StringComparison.OrdinalIgnoreCase));
@@ -211,7 +209,8 @@ namespace MonAppGestion
 
         private void txtProductSearch_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+            // Switch focus to suggestions with Down arrow instead of Shift
+            if (e.Key == Key.Down)
             {
                 if (lbProductSuggestions.Items.Count > 0)
                 {
@@ -259,42 +258,6 @@ namespace MonAppGestion
                     lbProductSuggestions.Visibility = Visibility.Collapsed;
                     txtProductSearch.Focus();
                     Keyboard.Focus(txtProductSearch);
-                    e.Handled = true;
-                }
-            }
-            catch { }
-        }
-
-        private void txtQteLine_KeyDown(object sender, KeyEventArgs e)
-        {
-            try
-            {
-                if (e.Key == Key.Enter)
-                {
-                    if (string.IsNullOrWhiteSpace(txtQteLine.Text))
-                        txtQteLine.Text = "1";
-                    if (string.IsNullOrWhiteSpace(txtPrixLine.Text) && _selectedProduct != null)
-                        txtPrixLine.Text = _selectedProduct.PrixAchat.ToString("0.00");
-
-                    btnAddLine_Click(btnAddLine, new RoutedEventArgs());
-                    e.Handled = true;
-                }
-            }
-            catch { }
-        }
-
-        private void txtPrixLine_KeyDown(object sender, KeyEventArgs e)
-        {
-            try
-            {
-                if (e.Key == Key.Enter)
-                {
-                    if (string.IsNullOrWhiteSpace(txtQteLine.Text))
-                        txtQteLine.Text = "1";
-                    if (string.IsNullOrWhiteSpace(txtPrixLine.Text) && _selectedProduct != null)
-                        txtPrixLine.Text = _selectedProduct.PrixAchat.ToString("0.00");
-
-                    btnAddLine_Click(btnAddLine, new RoutedEventArgs());
                     e.Handled = true;
                 }
             }
