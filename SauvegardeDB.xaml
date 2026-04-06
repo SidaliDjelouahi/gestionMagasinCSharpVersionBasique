@@ -1,0 +1,35 @@
+<Page x:Class="MonAppGestion.SauvegardeDB"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Sauvegarde DB"
+      Loaded="Page_Loaded">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,8">
+            <Button Content="1. Copier la DB ailleurs" Click="BtnCopyDb_Click" Width="200" />
+            <TextBlock x:Name="txtCopyStatus" Margin="8,4" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,0,0,8">
+            <Button Content="2. Importer une DB" Click="BtnImportDb_Click" Width="200" />
+            <TextBlock x:Name="txtImportStatus" Margin="8,4" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,0,0,8">
+            <TextBlock Text="3. Supprimer données table :" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <ComboBox x:Name="cbTables" Width="220" />
+            <Button Content="Supprimer" Margin="8,0" Click="BtnDeleteTable_Click" />
+            <TextBlock x:Name="txtDeleteStatus" Margin="8,4" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="3" x:Name="txtInfo" TextWrapping="Wrap" Margin="0,12,0,0">
+            Attention: les opérations sur la base de données sont irréversibles. Assurez-vous d'avoir une sauvegarde avant d'importer ou de supprimer des données.
+        </TextBlock>
+    </Grid>
+</Page>

@@ -1,0 +1,57 @@
+<Page x:Class="MonAppGestion.Analyse"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Analyse"
+      Loaded="Page_Loaded">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0" VerticalAlignment="Center" Margin="0,0,0,8">
+            <TextBlock Text="Solde Inventaire :" FontWeight="Bold" VerticalAlignment="Center" />
+            <TextBlock x:Name="txtSoldeInventaire" Margin="8,0" VerticalAlignment="Center" />
+            <Button Content="?" Click="ExplainInventaire_Click" Margin="8,0" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,8">
+            <TextBlock Text="Total Ventes (aujourd'hui) :" FontWeight="Bold" VerticalAlignment="Center" />
+            <TextBlock x:Name="txtTotalVentesAujourdHui" Margin="8,0" VerticalAlignment="Center" />
+            <Button Content="?" Click="ExplainVentesToday_Click" Margin="8,0" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="2" VerticalAlignment="Center" Margin="0,0,0,8">
+            <TextBlock Text="Solde caisse (versements aujourd'hui) :" FontWeight="Bold" VerticalAlignment="Center" />
+            <TextBlock x:Name="txtSoldeCaisse" Margin="8,0" VerticalAlignment="Center" />
+            <Button Content="?" Click="ExplainCaisse_Click" Margin="8,0" />
+        </StackPanel>
+
+        <GroupBox Header="Bénéfices (bons où versement est complet)" Grid.Row="3">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="6">
+                    <TextBlock Text="Total bénéfice (tous bons complets):" VerticalAlignment="Center" FontWeight="Bold" />
+                    <TextBlock x:Name="txtTotalBenefice" Margin="8,0" VerticalAlignment="Center" />
+                    <Button Content="?" Click="ExplainBenefice_Click" Margin="8,0" />
+                    <Button Content="Rafraîchir" Click="btnRefresh_Click" Margin="12,0" />
+                </StackPanel>
+
+                <DataGrid x:Name="dgBenefices" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" Margin="6">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="N° bon" Binding="{Binding NumVente}" Width="120" />
+                        <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="150" />
+                        <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat=N2}" Width="120" />
+                        <DataGridTextColumn Header="Bénéfice" Binding="{Binding Benefice, StringFormat=N2}" Width="120" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</Page>

@@ -59,6 +59,16 @@ namespace MonAppGestion
             MainFrame.Navigate(new Achats());
         }
 
+        private void btnAnalyse_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new Analyse());
+        }
+
+        private void btnSauvegardeDB_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new SauvegardeDB());
+        }
+
         private void btnLogout_Click(object sender, RoutedEventArgs e)
         {
             // Ferme le Dashboard et retourne à la fenêtre de connexion
