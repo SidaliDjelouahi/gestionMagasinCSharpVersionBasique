@@ -50,7 +50,21 @@
                     <StackPanel VerticalAlignment="Top">
                         <TextBox x:Name="txtProductSearch" Width="180" Height="24" KeyUp="txtProductSearch_KeyUp" KeyDown="txtProductSearch_KeyDown" MouseEnter="txtProductSearch_MouseEnter" />
                         <ListBox x:Name="lbProductSuggestions" Width="180" Height="120" Visibility="Collapsed"
-                                 DisplayMemberPath="Nom" SelectionChanged="lbProductSuggestions_SelectionChanged" KeyDown="lbProductSuggestions_KeyDown"/>
+                                 SelectionChanged="lbProductSuggestions_SelectionChanged" KeyDown="lbProductSuggestions_KeyDown">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="4">
+                                        <TextBlock Text="{Binding Nom}" FontWeight="Bold" />
+                                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                            <TextBlock Text="Stock:" FontSize="11" Foreground="Gray" />
+                                            <TextBlock Text="{Binding Qte}" FontSize="11" Foreground="Gray" Margin="4,0,8,0" />
+                                            <TextBlock Text="Prix:" FontSize="11" Foreground="Gray" />
+                                            <TextBlock Text="{Binding PrixVente, StringFormat='{}{0:N2} €'}" FontSize="11" Foreground="Gray" Margin="4,0,0,0" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </StackPanel>
                     <TextBox x:Name="txtQteLine" Width=" 40" Height="24" Margin="8,0" VerticalAlignment="Top" />
                     <TextBox x:Name="txtPrixLine" Width="60" Height="24" Margin="8,0" VerticalAlignment="Top" />

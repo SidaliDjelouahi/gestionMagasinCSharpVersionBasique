@@ -1,3 +1,64 @@
+--------------------------------------------- copilote
+
+Created 4 todos
+
+Voici la marche à suivre concise pour installer la version d'essai (et générer une licence payante si besoin).
+
+Points importants avant tout
+- Le code actuel gère 2 cas :
+  - Absence de app.lic → la première exécution écrit une date d'installation protégée en DPAPI dans le Registre (période d'essai 30 jours).
+  - Présence de app.lic → le programme essaie de déchiffrer le fichier (DPAPI CurrentUser) et valide la date et le HDD serial.
+- Conséquence DPAPI : un fichier app.lic généré sur une machine/utilisateur différent(ne) ne pourra pas être déchiffré sur le poste du client. Pour générer une licence déchiffrable par le client, il faut soit générer app.lic sur le poste client, soit changer le mécanisme pour utiliser AES avec une clé côté serveur.
+
+1) Déployer la version d'essai (procédure simple)
+- Build Release de l'application :
+  ```bash
+  dotnet publish -c Release -r win-x64 -o publish --self-contained false
+  ```
+- Transférer le contenu du dossier `publish` sur la machine client (ex. `C:\Program Files\MonAppGestion\`).
+- Ne PAS ajouter app.lic. À la première exécution l'application écrira la date d'installation protégée dans le Registre et la période d'essai commencera (30 jours).
+
+2) Générer un app.lic pour licence payante — méthode recommandée n°1 (générer localement sur le client)
+- Publier l'outil `CreateLicense` en exécutable autonome (à fournir au technicien/client) :
+  ```bash
+  dotnet publish tools/CreateLicense -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o tools\publish
+  ```
+- Copier `CreateLicense.exe` sur le poste client et exécuter (ex. 365 jours) depuis une invite PowerShell lancée en tant que l'utilisateur qui utilisera l'app :
+  ```powershell
+  .\CreateLicense.exe "C:\Program Files\MonAppGestion\app.lic" 365
+  ```
+  - Cette commande crée app.lic chiffré par DPAPI CurrentUser. Placez app.lic dans le répertoire de l'application (même dossier que l'exe).
+  - L'application pourra ensuite lire/déchiffrer app.lic et activer la version payante.
+
+3) Générer un app.lic pour licence payante — méthode recommandée n°2 (si vous voulez générer côté serveur)
+- Ne PAS utiliser DPAPI for-protection if you want server-generated license. Replace DPAPI with AES/HMAC using a secret key stored on your licensing server and in the app (or public key crypto), then:
+  - Server: create license file (HDD_SERIAL|expiry) encrypted with AES or signed.
+  - App: decrypt/verify using the embedded public key or shared key.
+- Si vous souhaitez que je modifie le code pour utiliser AES/signature côté serveur, je peux l'implémenter.
+
+4) Vérifier ou récupérer le HDD Serial (si needed)
+- Sur le poste client PowerShell :
+  ```powershell
+  Get-WmiObject Win32_PhysicalMedia | Select-Object SerialNumber
+  ```
+  (ou utilisez l'outil `CreateLicense` qui retourne un avertissement si le serial n'est pas trouvé)
+
+5) Conseils d'installation / sécurité
+- Préférez un installateur (InnoSetup/NSIS/MSI) pour copier les fichiers et créer des raccourcis. Incluez une page d'instructions pour l'équipe de support pour générer app.lic.
+- Informez le client que DPAPI liera le fichier de licence au compte Windows et que changer de compte ou réinstaller Windows peut requérir une nouvelle licence.
+- Pour empêcher triche par changement d'heure, l'application tente de récupérer la date via HTTP; ce n'est pas infaillible — considérez une vérification serveur si besoin.
+
+Souhaitez-vous que je
+- publie pour vous `CreateLicense.exe` (je peux exécuter la commande `dotnet publish` ici et produire l'exécutable), ou
+- modifie le système de licence pour permettre création serveur-side (AES/public-key) ?
+
+
+
+
+--------------------------------------------- gemini
+
+
+
 C'est une excellente étape pour professionnaliser votre logiciel. Pour gérer à la fois la sécurité par matériel (HDD SN), la période d'essai et la distinction entre version gratuite et payante, vous devez structurer votre logique de validation dès le démarrage.
 
 Voici une approche robuste pour implémenter cela dans votre application WPF :

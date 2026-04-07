@@ -8,6 +8,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <!-- Disable SDK auto-generation of assembly attributes to avoid duplicates when building in workspace -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +25,7 @@
   <ItemGroup>
     <Compile Remove="querydb\**\*.cs" />
     <Compile Remove="dbinspect\**\*.cs" />
+    <Compile Remove="tools\**\*.cs" />
   </ItemGroup>
 
 </Project>
