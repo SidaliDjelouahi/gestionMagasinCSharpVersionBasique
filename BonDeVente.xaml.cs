@@ -19,6 +19,7 @@ namespace MonAppGestion
         private List<TempDetail> _lines = new List<TempDetail>();
         private List<Product> _allProducts = new List<Product>();
         private List<Client> _allClients = new List<Client>();
+        private List<Product> _shortcutProducts = new List<Product>();
         private Product? _selectedProduct = null;
         private TempDetail? _editingLine = null;
         private bool _versementEdited = false;
@@ -35,6 +36,44 @@ namespace MonAppGestion
             txtVersement.Text = "0.00";
             _settingVersementProgrammatically = false;
             RefreshDetailsGrid();
+            // register F6 handler on parent Window to allow global capture
+            this.Loaded += (s, e) =>
+            {
+                var w = Window.GetWindow(this);
+                if (w != null)
+                    w.PreviewKeyDown += Window_PreviewKeyDown;
+            };
+        }
+
+        private void Window_PreviewKeyDown(object? sender, System.Windows.Input.KeyEventArgs e)
+        {
+            try
+            {
+                if (e.Key == Key.F6)
+                {
+                    if (!_lines.Any())
+                    {
+                        MessageBox.Show("Aucune ligne à modifier.");
+                        e.Handled = true;
+                        return;
+                    }
+
+                    var last = _lines.Last();
+                    var dlg = new EditLastLineWindow(last.Nom, last.Qte, last.PrixVente);
+                    dlg.Owner = Window.GetWindow(this);
+                    var res = dlg.ShowDialog();
+                    if (res == true)
+                    {
+                        // apply changes to the last line
+                        last.Nom = dlg.ProductName ?? last.Nom;
+                        last.Qte = dlg.Qty;
+                        last.PrixVente = dlg.Price;
+                        RefreshDetailsGrid();
+                    }
+                    e.Handled = true;
+                }
+            }
+            catch { }
         }
 
         private void ChargerClients()
@@ -125,6 +164,8 @@ namespace MonAppGestion
             {
                 _allProducts = db.Products.ToList();
                 lbProductSuggestions.ItemsSource = _allProducts;
+                _shortcutProducts = db.Products.Where(p => p.Raccourci > 0).ToList();
+                RefreshShortcuts();
             }
         }
         private void txtProductSearch_KeyUp(object sender, KeyEventArgs e)
@@ -215,18 +256,34 @@ namespace MonAppGestion
 
         private void txtProductSearch_KeyDown(object sender, KeyEventArgs e)
         {
-            // If user presses Shift, move focus to the suggestions list (if any)
-            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+            try
             {
-                if (lbProductSuggestions.Items.Count > 0)
+                // If user presses Escape, clear search and keep focus on the textbox
+                if (e.Key == Key.Escape)
                 {
-                    lbProductSuggestions.Visibility = Visibility.Visible;
-                    lbProductSuggestions.SelectedIndex = 0;
-                    lbProductSuggestions.Focus();
-                    Keyboard.Focus(lbProductSuggestions);
+                    try { txtProductSearch.Clear(); } catch { }
+                    lbProductSuggestions.Visibility = Visibility.Collapsed;
+                    _selectedProduct = null;
+                    txtProductSearch.Focus();
+                    Keyboard.Focus(txtProductSearch);
                     e.Handled = true;
+                    return;
+                }
+
+                // If user presses Shift, move focus to the suggestions list (if any)
+                if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+                {
+                    if (lbProductSuggestions.Items.Count > 0)
+                    {
+                        lbProductSuggestions.Visibility = Visibility.Visible;
+                        lbProductSuggestions.SelectedIndex = 0;
+                        lbProductSuggestions.Focus();
+                        Keyboard.Focus(lbProductSuggestions);
+                        e.Handled = true;
+                    }
                 }
             }
+            catch { }
         }
 
         private void lbProductSuggestions_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -329,6 +386,128 @@ namespace MonAppGestion
             {
                 MessageBox.Show("Sélectionnez un produit et entrez une quantité et un prix valides.");
             }
+        }
+
+        private void btnCreateShortcut_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Product? prod = null;
+                if (lbProductSuggestions.SelectedItem is Product sel)
+                    prod = sel;
+                else if (!string.IsNullOrWhiteSpace(txtProductSearch.Text))
+                    prod = _allProducts.FirstOrDefault(p => string.Equals(p.Nom, txtProductSearch.Text, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(p.Code, txtProductSearch.Text, StringComparison.OrdinalIgnoreCase));
+
+                if (prod == null)
+                {
+                    MessageBox.Show("Sélectionnez un produit valide pour créer un raccourci.");
+                    return;
+                }
+
+                if (_shortcutProducts.Any(p => p.Id == prod.Id))
+                {
+                    MessageBox.Show("Ce produit est déjà en raccourci.");
+                    return;
+                }
+
+                // Persist shortcut flag to DB
+                try
+                {
+                    using (var db = new AppDbContext())
+                    {
+                        var toUpdate = db.Products.Find(prod.Id);
+                        if (toUpdate != null)
+                        {
+                            toUpdate.Raccourci = 1;
+                            db.SaveChanges();
+                        }
+                    }
+                }
+                catch { }
+
+                _shortcutProducts.Add(prod);
+                RefreshShortcuts();
+            }
+            catch { }
+        }
+
+        private void RefreshShortcuts()
+        {
+            try
+            {
+                spShortcuts.Children.Clear();
+                foreach (var p in _shortcutProducts)
+                {
+                    var container = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(4, 0, 4, 0) };
+                    var b = new Button { Content = p.Nom, Width = 80, Tag = p.Id };
+                    b.Click += ShortcutButton_Click;
+                    var remove = new Button { Content = "x", Width = 24, Height = 24, Margin = new Thickness(4,0,0,0), Tag = p.Id };
+                    remove.Click += RemoveShortcut_Click;
+                    container.Children.Add(b);
+                    container.Children.Add(remove);
+                    spShortcuts.Children.Add(container);
+                }
+            }
+            catch { }
+        }
+
+        private void RemoveShortcut_Click(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is Button b && b.Tag is int id)
+                {
+                    // update DB to set Raccourci = null
+                    try
+                    {
+                        using (var db = new AppDbContext())
+                        {
+                            var prod = db.Products.Find(id);
+                            if (prod != null)
+                            {
+                                prod.Raccourci = null;
+                                db.SaveChanges();
+                            }
+                        }
+                    }
+                    catch { }
+
+                    _shortcutProducts.RemoveAll(p => p.Id == id);
+                    RefreshShortcuts();
+                }
+            }
+            catch { }
+        }
+
+        private void ShortcutButton_Click(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is Button b && b.Tag is int id)
+                {
+                    var prod = _allProducts.FirstOrDefault(p => p.Id == id);
+                    if (prod == null) return;
+                    var existing = _lines.FirstOrDefault(l => l.IdProduit == prod.Id);
+                    if (existing != null)
+                    {
+                        existing.Qte += 1;
+                    }
+                    else
+                    {
+                        var line = new TempDetail
+                        {
+                            IdProduit = prod.Id,
+                            Nom = prod.Nom,
+                            PrixVente = prod.PrixVente,
+                            Qte = 1
+                        };
+                        _lines.Add(line);
+                    }
+                    RefreshDetailsGrid();
+                }
+            }
+            catch { }
         }
 
         private void RefreshDetailsGrid()

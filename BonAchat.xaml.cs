@@ -63,7 +63,9 @@ namespace MonAppGestion
         {
             // Open Produits page in a dialog window for quick add
             var wnd = new Window { Title = "Produits", Width = 700, Height = 500, Owner = Window.GetWindow(this) };
-            wnd.Content = new Produits();
+            var prodPage = new Produits();
+            prodPage.ShowActions = false; // hide modifier/supprimer when opened from BonAchat
+            wnd.Content = prodPage;
             wnd.ShowDialog();
             // reload products and prefill the product search with the last added product if any
             ChargerProduits();

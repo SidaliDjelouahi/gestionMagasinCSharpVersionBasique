@@ -44,7 +44,8 @@ namespace MonAppGestion
                     {
                         existing.Username = txtNewUser.Text;
                         existing.Password = txtNewPass.Text;
-                            existing.Rank = ((ComboBoxItem)cbRank.SelectedItem).Content.ToString();
+                        var selRank = (cbRank.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? string.Empty;
+                        existing.Rank = selRank;
                         db.SaveChanges();
                     }
                     _editingUserId = null;
@@ -52,7 +53,7 @@ namespace MonAppGestion
                 }
                 else
                 {
-                    var nvxUser = new User { Username = txtNewUser.Text, Password = txtNewPass.Text, Rank = ((ComboBoxItem)cbRank.SelectedItem).Content.ToString() };
+                    var nvxUser = new User { Username = txtNewUser.Text, Password = txtNewPass.Text, Rank = (cbRank.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? string.Empty };
                     db.Users.Add(nvxUser);
                     db.SaveChanges();
                 }

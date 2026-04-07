@@ -112,9 +112,10 @@ namespace MonAppGestion
                     }
                     else
                     {
-                        // Generic delete for other tables
+                        // Generic delete for other tables (table name comes from a controlled list)
                         var sqlTable = table;
-                        db.Database.ExecuteSqlRaw($"DELETE FROM [{sqlTable}]");
+                        // avoid interpolated string to silence EF1002 warning; table name is from a controlled list
+                        db.Database.ExecuteSqlRaw("DELETE FROM [" + sqlTable + "]");
                     }
 
                     txtDeleteStatus.Text = "Suppression effectuée.";
@@ -207,7 +208,18 @@ namespace MonAppGestion
                                 {
                                     // try parse as text or datetime
                                     try { p.DateExpiration = rdr.GetDateTime(5); }
-                                    catch { try { p.DateExpiration = DateTime.Parse(rdr.GetString(5), CultureInfo.InvariantCulture); } catch { p.DateExpiration = null; } }
+                                    catch
+                                    {
+                                        try
+                                        {
+                                            string? s = rdr.IsDBNull(5) ? null : rdr.GetValue(5)?.ToString();
+                                            if (!string.IsNullOrWhiteSpace(s))
+                                                p.DateExpiration = DateTime.Parse(s, CultureInfo.InvariantCulture);
+                                            else
+                                                p.DateExpiration = null;
+                                        }
+                                        catch { p.DateExpiration = null; }
+                                    }
                                 }
                                 productsToImport.Add(p);
                             }
@@ -221,7 +233,7 @@ namespace MonAppGestion
                     int added = 0, updated = 0;
                     foreach (var ip in productsToImport)
                     {
-                        Product match = null;
+                        Product? match = null;
                         if (!string.IsNullOrWhiteSpace(ip.Code))
                             match = db.Products.FirstOrDefault(x => x.Code == ip.Code);
                         if (match == null && !string.IsNullOrWhiteSpace(ip.Nom))

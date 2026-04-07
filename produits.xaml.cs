@@ -9,11 +9,23 @@ namespace MonAppGestion
     public partial class Produits : Page
     {
         private int? _editingProductId = null;
+        public bool ShowActions { get; set; } = true;
 
         public Produits()
         {
             InitializeComponent();
+            Loaded += Produits_Loaded;
             ChargerProduits();
+        }
+
+        private void Produits_Loaded(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                btnModifier.Visibility = ShowActions ? Visibility.Visible : Visibility.Collapsed;
+                btnSupprimer.Visibility = ShowActions ? Visibility.Visible : Visibility.Collapsed;
+            }
+            catch { }
         }
 
         private void ChargerProduits()

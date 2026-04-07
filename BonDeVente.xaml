@@ -47,29 +47,40 @@
 
                 <TextBlock Text="Ajouter ligne" FontWeight="Bold" Margin="0,6" />
                 <StackPanel Orientation="Horizontal" Margin="0,4">
-                    <StackPanel VerticalAlignment="Top">
-                        <TextBox x:Name="txtProductSearch" Width="180" Height="24" KeyUp="txtProductSearch_KeyUp" KeyDown="txtProductSearch_KeyDown" MouseEnter="txtProductSearch_MouseEnter" />
-                        <ListBox x:Name="lbProductSuggestions" Width="180" Height="120" Visibility="Collapsed"
-                                 SelectionChanged="lbProductSuggestions_SelectionChanged" KeyDown="lbProductSuggestions_KeyDown">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Margin="4">
-                                        <TextBlock Text="{Binding Nom}" FontWeight="Bold" />
-                                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                            <TextBlock Text="Stock:" FontSize="11" Foreground="Gray" />
-                                            <TextBlock Text="{Binding Qte}" FontSize="11" Foreground="Gray" Margin="4,0,8,0" />
-                                            <TextBlock Text="Prix:" FontSize="11" Foreground="Gray" />
-                                            <TextBlock Text="{Binding PrixVente, StringFormat='{}{0:N2} €'}" FontSize="11" Foreground="Gray" Margin="4,0,0,0" />
+                    <Grid Margin="0,0,8,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="40" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Top" Grid.Column="0">
+                            <TextBox x:Name="txtProductSearch" Width="180" Height="24" KeyUp="txtProductSearch_KeyUp" KeyDown="txtProductSearch_KeyDown" MouseEnter="txtProductSearch_MouseEnter" />
+                            <ListBox x:Name="lbProductSuggestions" Width="180" Height="120" Visibility="Collapsed"
+                                     SelectionChanged="lbProductSuggestions_SelectionChanged" KeyDown="lbProductSuggestions_KeyDown">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="{Binding Nom}" FontWeight="Bold" />
+                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                <TextBlock Text="Stock:" FontSize="11" Foreground="Gray" />
+                                                <TextBlock Text="{Binding Qte}" FontSize="11" Foreground="Gray" Margin="4,0,8,0" />
+                                                <TextBlock Text="Prix:" FontSize="11" Foreground="Gray" />
+                                                <TextBlock Text="{Binding PrixVente, StringFormat='{}{0:N2} €'}" FontSize="11" Foreground="Gray" Margin="4,0,0,0" />
+                                            </StackPanel>
                                         </StackPanel>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </StackPanel>
-                    <TextBox x:Name="txtQteLine" Width=" 40" Height="24" Margin="8,0" VerticalAlignment="Top" />
-                    <TextBox x:Name="txtPrixLine" Width="60" Height="24" Margin="8,0" VerticalAlignment="Top" />
-                    <Button x:Name="btnAddLine" Content="Ajouter" Width="80" Height="24" Click="btnAddLine_Click" Margin="8,0" VerticalAlignment="Top" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="Esc" FontSize="11" Foreground="Blue" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="6,2,0,0" />
+                    </Grid>
+                    <TextBox x:Name="txtQteLine" Width="40" Height="24" Margin="0,0,8,0" VerticalAlignment="Top" />
+                    <TextBox x:Name="txtPrixLine" Width="60" Height="24" Margin="0,0,8,0" VerticalAlignment="Top" />
+                    <Button x:Name="btnAddLine" Content="Ajouter" Width="80" Height="24" Click="btnAddLine_Click" Margin="0,0,0,0" VerticalAlignment="Top" />
                 </StackPanel>
+                <Button x:Name="btnCreateShortcut" Content="Créer raccourci" Width="120" Height="24" Click="btnCreateShortcut_Click" Margin="8,0,0,0" VerticalAlignment="Top" />
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MaxWidth="420" MaxHeight="120" Margin="0,8,0,0">
+                    <WrapPanel x:Name="spShortcuts" Orientation="Horizontal" />
+                </ScrollViewer>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Grid.Row="1" VerticalAlignment="Bottom" Margin="0,12,0,0">
@@ -103,7 +114,14 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <TextBlock Text="Lignes du bon" FontSize="20" FontWeight="Bold" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Lignes du bon" FontSize="20" FontWeight="Bold" Grid.Column="0" />
+                <TextBlock Text="F6" FontSize="11" Foreground="Blue" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0,0,0" />
+            </Grid>
             <DataGrid x:Name="dgDetails" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" Margin="0,8,0,0"
                       CellEditEnding="dgDetails_CellEditEnding" RowEditEnding="dgDetails_RowEditEnding">
                 <DataGrid.Columns>

@@ -13,5 +13,7 @@ namespace MonAppGestion.Models
         public decimal PrixAchat { get; set; }
         public decimal PrixVente { get; set; }
         public DateTime? DateExpiration { get; set; }
+        // null = not a shortcut, >0 can be used for ordering or shortcut slot
+        public int? Raccourci { get; set; } = null;
     }
 }
