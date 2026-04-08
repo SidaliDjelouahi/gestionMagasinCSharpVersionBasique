@@ -31,6 +31,7 @@ namespace MonAppGestion
             ChargerProduits();
             ChargerClients();
             dpDateVente.SelectedDate = DateTime.Today;
+            try { txtTime.Text = DateTime.Now.ToString("HH:mm"); } catch { }
             _versementEdited = false;
             _settingVersementProgrammatically = true;
             txtVersement.Text = "0.00";
@@ -43,6 +44,27 @@ namespace MonAppGestion
                 if (w != null)
                     w.PreviewKeyDown += Window_PreviewKeyDown;
             };
+        }
+
+        // helper to get the selected date+time from the controls
+        private DateTime GetSelectedDateTime()
+        {
+            try
+            {
+                var date = dpDateVente.SelectedDate ?? DateTime.Today;
+                var timeText = (txtTime?.Text ?? string.Empty).Trim();
+                if (TimeSpan.TryParse(timeText, out var ts))
+                {
+                    return date.Date + ts;
+                }
+                // try parse as DateTime for flexible formats
+                if (DateTime.TryParse(timeText, out var dt))
+                {
+                    return date.Date + dt.TimeOfDay;
+                }
+            }
+            catch { }
+            return dpDateVente.SelectedDate ?? DateTime.Today;
         }
 
         private void Window_PreviewKeyDown(object? sender, System.Windows.Input.KeyEventArgs e)
@@ -633,7 +655,7 @@ namespace MonAppGestion
                     var vente = new Vente
                     {
                         NumVente = txtNumVente.Text,
-                        Date = dpDateVente.SelectedDate.Value,
+                        Date = GetSelectedDateTime(),
                         Versement = versement
                     };
                     // attach selected client if any
@@ -719,7 +741,8 @@ namespace MonAppGestion
             var meta = new Paragraph();
             meta.Inlines.Add(new Run($"N°: {txtNumVente.Text}") { FontWeight = FontWeights.Bold });
             meta.Inlines.Add(new LineBreak());
-            meta.Inlines.Add(new Run($"Date: {dpDateVente.SelectedDate?.ToString("g") ?? string.Empty}"));
+            var selDt = GetSelectedDateTime();
+            meta.Inlines.Add(new Run($"Date: {selDt.ToString("g")}"));
             meta.Inlines.Add(new LineBreak());
             if (cbClients.SelectedItem is MonAppGestion.Models.Client c && c.Id != 0)
             {

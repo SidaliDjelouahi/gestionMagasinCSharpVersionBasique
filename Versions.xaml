@@ -1,0 +1,45 @@
+<Page x:Class="MonAppGestion.Versions"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Versions"
+      Background="White">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Gestion des Versions" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" />
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10" HorizontalAlignment="Left">
+            <StackPanel>
+                <TextBlock>Nom branch</TextBlock>
+                <TextBox x:Name="txtNomBranch" Width="200" />
+            </StackPanel>
+            <StackPanel Margin="10,0,0,0">
+                <TextBlock>HDD SN</TextBlock>
+                <TextBox x:Name="txtHddSn" Width="200" />
+            </StackPanel>
+            <StackPanel Margin="10,0,0,0">
+                <TextBlock>Client</TextBlock>
+                <TextBox x:Name="txtClient" Width="200" />
+            </StackPanel>
+            <StackPanel VerticalAlignment="Bottom" Orientation="Horizontal" Margin="10,0,0,0">
+                <Button x:Name="btnAjouterVersion" Content="Ajouter" Click="btnAjouterVersion_Click" Width="100" Margin="0,0,8,0" Background="Green" Foreground="White" />
+                <Button x:Name="btnModifierVersion" Content="Modifier" Click="btnModifierVersion_Click" Width="100" Margin="0,0,8,0" Background="#007ACC" Foreground="White" />
+                <Button x:Name="btnSupprimerVersion" Content="Supprimer" Click="btnSupprimerVersion_Click" Width="100" Background="Red" Foreground="White" />
+            </StackPanel>
+        </StackPanel>
+
+        <DataGrid x:Name="dgVersions" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="50"/>
+                <DataGridTextColumn Header="Nom branch" Binding="{Binding NomBranch}" Width="200"/>
+                <DataGridTextColumn Header="HDD SN" Binding="{Binding HDD_sn}" Width="200"/>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=g}" Width="200"/>
+                <DataGridTextColumn Header="Client" Binding="{Binding Client}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

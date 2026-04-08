@@ -14,6 +14,7 @@
             <Button x:Name="btnAchats" Content="Achats" Margin="0,5" Click="btnAchats_Click"/>
             <Button x:Name="btnAnalyse" Content="Analyse" Margin="0,5" Click="btnAnalyse_Click"/>
             <Button x:Name="btnSauvegardeDB" Content="Sauvegarde DB" Margin="0,5" Click="btnSauvegardeDB_Click"/>
+            <Button x:Name="btnVersions" Content="Versions" Margin="0,5" Click="btnVersions_Click"/>
             <Button x:Name="btnFournisseurs" Content="Fournisseurs" Margin="0,5" Click="btnFournisseurs_Click"/>
             <Button x:Name="btnVentes" Content="Ventes" Margin="0,5" Click="btnVentes_Click"/>
             <Button x:Name="btnBonDeVente" Content="Bon de vente" Margin="0,5" Click="btnBonDeVente_Click"/>

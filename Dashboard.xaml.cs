@@ -28,6 +28,7 @@ namespace MonAppGestion
             btnAchats.Visibility = Visibility.Visible;
             btnAnalyse.Visibility = Visibility.Visible;
             btnSauvegardeDB.Visibility = Visibility.Visible;
+            btnVersions.Visibility = Visibility.Visible;
             btnFournisseurs.Visibility = Visibility.Visible;
             btnVentes.Visibility = Visibility.Visible;
             btnBonDeVente.Visibility = Visibility.Visible;
@@ -61,6 +62,11 @@ namespace MonAppGestion
             {
                 // developer/admin: show all (do nothing)
             }
+        }
+
+        private void btnVersions_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new Versions());
         }
 
         private void btnUtilisateurs_Click(object sender, RoutedEventArgs e)

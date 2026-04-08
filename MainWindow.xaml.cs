@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Management;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
 using System.Windows.Data;
@@ -48,6 +49,14 @@ private void SeedDatabase()
 }
     private void btnLogin_Click(object sender, RoutedEventArgs e)
     {
+        // Vérification du numéro de série du disque dur avant toute authentification
+        var hddSn = GetHddSerial();
+        if (hddSn != "NC8400R008422")
+        {
+            MessageBox.Show("La version a expire , veuillez contacter le fournisseur de l'application 0549466662", "Licence expirée", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         using (var db = new AppDbContext())
         {
             // On cherche l'utilisateur dans la base
@@ -72,6 +81,25 @@ private void SeedDatabase()
 }
             
         }
+    }
+
+    private string GetHddSerial()
+    {
+        try
+        {
+            using var searcher = new ManagementObjectSearcher("SELECT SerialNumber FROM Win32_PhysicalMedia");
+            foreach (ManagementObject wmi in searcher.Get())
+            {
+                var sn = wmi["SerialNumber"]?.ToString()?.Trim();
+                if (!string.IsNullOrEmpty(sn))
+                    return sn;
+            }
+        }
+        catch
+        {
+            // ignore and return empty
+        }
+        return string.Empty;
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)

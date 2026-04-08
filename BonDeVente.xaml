@@ -27,7 +27,10 @@
 
                 <StackPanel Orientation="Horizontal" Margin="0,4">
                     <TextBlock Text="Date:" Width="70" VerticalAlignment="Center"/>
-                    <DatePicker x:Name="dpDateVente" Width="200" />
+                    <StackPanel Orientation="Horizontal">
+                        <DatePicker x:Name="dpDateVente" Width="140" />
+                        <TextBox x:Name="txtTime" Width="60" Height="24" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
                 </StackPanel>
 
                 <Grid Margin="0,4">
