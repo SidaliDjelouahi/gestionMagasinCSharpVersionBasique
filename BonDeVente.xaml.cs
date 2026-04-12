@@ -190,6 +190,9 @@ namespace MonAppGestion
                 RefreshShortcuts();
             }
         }
+        // Ajout douchette : si saisie rapide (scanne), ajouter direct la ligne
+        private DateTime _lastProductSearchInput = DateTime.MinValue;
+        private string _lastProductSearchText = string.Empty;
         private void txtProductSearch_KeyUp(object sender, KeyEventArgs e)
         {
             try
@@ -212,8 +215,25 @@ namespace MonAppGestion
                 {
                     lbProductSuggestions.ItemsSource = filtered;
                     lbProductSuggestions.Visibility = Visibility.Visible;
-                    // handle navigation keys
+                    // Gestion douchette : détection saisie rapide (scanne)
+                    var now = DateTime.Now;
+                    if (_lastProductSearchText != text)
+                    {
+                        _lastProductSearchInput = now;
+                        _lastProductSearchText = text;
+                    }
+                    // Si touche Enter OU si la saisie a été très rapide (douchette)
+                    bool isScanner = false;
                     if (e.Key == Key.Enter)
+                    {
+                        isScanner = true;
+                    }
+                    else if (text.Length > 3 && (now - _lastProductSearchInput).TotalMilliseconds < 100)
+                    {
+                        // Saisie très rapide, probablement douchette
+                        isScanner = true;
+                    }
+                    if (isScanner)
                     {
                         // If there's an exact match by code or name, prefer it
                         Product? chosen = null;
@@ -222,7 +242,6 @@ namespace MonAppGestion
                         chosen = exact ?? filtered.FirstOrDefault();
                         if (chosen != null)
                         {
-                            // If product already exists in current lines, increment its quantity instead of adding a new line
                             var existing = _lines.FirstOrDefault(l => l.IdProduit == chosen.Id);
                             if (existing != null)
                             {
@@ -244,10 +263,8 @@ namespace MonAppGestion
                             txtProductSearch.Clear();
                             lbProductSuggestions.Visibility = Visibility.Collapsed;
                             _selectedProduct = chosen;
-                            // leave quantity and price inputs empty for manual entry (like BonAchat behavior)
                             try { txtPrixLine.Clear(); } catch { }
                             try { txtQteLine.Clear(); } catch { }
-                            // After adding/incrementing, return focus to the product search box for quick next entry
                             txtProductSearch.Focus();
                             Keyboard.Focus(txtProductSearch);
                             e.Handled = true;
