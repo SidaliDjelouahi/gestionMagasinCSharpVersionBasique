@@ -17,8 +17,7 @@ namespace MonAppGestion
         public partial class BonDeVente : Page
         {
             // Pour gestion douchette (scan rapide)
-            private DateTime _lastProductSearchInput = DateTime.MinValue;
-            private string _lastProductSearchText = string.Empty;
+            // (doublons supprimés)
         private List<TempDetail> _lines = new List<TempDetail>();
         private List<Product> _allProducts = new List<Product>();
         private List<Client> _allClients = new List<Client>();
