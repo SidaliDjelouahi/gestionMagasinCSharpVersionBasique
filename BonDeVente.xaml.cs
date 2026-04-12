@@ -28,24 +28,119 @@ namespace MonAppGestion
         private bool _versementEdited = false;
         private bool _settingVersementProgrammatically = false;
 
+        // Buffer douchette (scan rapide)
+        private string _barcodeBuffer = "";
+        private DateTime _lastBarcodeKeystroke = DateTime.Now;
+        private const int BarcodeDelay = 50; // ms
+
         public BonDeVente()
         {
             InitializeComponent();
             ChargerProduits();
             ChargerClients();
             dpDateVente.SelectedDate = DateTime.Today;
+            try { txtTime.Text = DateTime.Now.ToString("HH:mm"); } catch { }
             _versementEdited = false;
             _settingVersementProgrammatically = true;
             txtVersement.Text = "0.00";
             _settingVersementProgrammatically = false;
             RefreshDetailsGrid();
-            // register F6 handler on parent Window to allow global capture
+            // register F6 handler and barcode handler on parent Window to allow global capture
             this.Loaded += (s, e) =>
             {
                 var w = Window.GetWindow(this);
                 if (w != null)
+                {
                     w.PreviewKeyDown += Window_PreviewKeyDown;
+                    w.PreviewKeyDown += BonDeVente_PreviewKeyDown_Barcode;
+                }
             };
+        }
+
+        // Gestion du buffer douchette (scan rapide)
+        private void BonDeVente_PreviewKeyDown_Barcode(object? sender, KeyEventArgs e)
+        {
+            // Si le focus est dans une TextBox d'édition (hors txtProductSearch), on ignore
+            if (Keyboard.FocusedElement is TextBox tb && tb != txtProductSearch)
+                return;
+
+            // On ne traite que les touches numériques et Enter
+            if (e.Key == Key.Enter)
+            {
+                if (_barcodeBuffer.Length > 0)
+                {
+                    string code = _barcodeBuffer;
+                    _barcodeBuffer = "";
+                    Dispatcher.Invoke(() => TraiterCodeBarre(code));
+                    e.Handled = true;
+                }
+                return;
+            }
+
+            TimeSpan elapsed = DateTime.Now - _lastBarcodeKeystroke;
+            if (elapsed.TotalMilliseconds > BarcodeDelay)
+                _barcodeBuffer = ""; // Trop lent, on considère que c'est un humain
+
+            // Ajout des chiffres (clavier principal)
+            if (e.Key >= Key.D0 && e.Key <= Key.D9)
+                _barcodeBuffer += (char)('0' + (e.Key - Key.D0));
+            // Ajout des chiffres (pavé numérique)
+            else if (e.Key >= Key.NumPad0 && e.Key <= Key.NumPad9)
+                _barcodeBuffer += (char)('0' + (e.Key - Key.NumPad0));
+            // Ajoutez d'autres touches si besoin (lettres, etc.)
+
+            _lastBarcodeKeystroke = DateTime.Now;
+        }
+
+        // Traitement du code-barres scanné
+        private void TraiterCodeBarre(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return;
+            // Recherche du produit par code
+            var chosen = _allProducts.FirstOrDefault(p => string.Equals(p.Code, code, StringComparison.OrdinalIgnoreCase));
+            if (chosen != null)
+            {
+                var existing = _lines.FirstOrDefault(l => l.IdProduit == chosen.Id);
+                if (existing != null)
+                    existing.Qte += 1;
+                else
+                    _lines.Add(new TempDetail { IdProduit = chosen.Id, Nom = chosen.Nom, PrixVente = chosen.PrixVente, Qte = 1 });
+                RefreshDetailsGrid();
+                // Efface la recherche et suggestions
+                txtProductSearch.Clear();
+                lbProductSuggestions.Visibility = Visibility.Collapsed;
+                _selectedProduct = chosen;
+                try { txtPrixLine.Clear(); } catch { }
+                try { txtQteLine.Clear(); } catch { }
+                txtProductSearch.Focus();
+                Keyboard.Focus(txtProductSearch);
+            }
+            else
+            {
+                // Optionnel : afficher un message si le code n'est pas trouvé
+                MessageBox.Show($"Produit non trouvé pour le code : {code}");
+            }
+        }
+
+        // helper to get the selected date+time from the controls
+        private DateTime GetSelectedDateTime()
+        {
+            try
+            {
+                var date = dpDateVente.SelectedDate ?? DateTime.Today;
+                var timeText = (txtTime?.Text ?? string.Empty).Trim();
+                if (TimeSpan.TryParse(timeText, out var ts))
+                {
+                    return date.Date + ts;
+                }
+                // try parse as DateTime for flexible formats
+                if (DateTime.TryParse(timeText, out var dt))
+                {
+                    return date.Date + dt.TimeOfDay;
+                }
+            }
+            catch { }
+            return dpDateVente.SelectedDate ?? DateTime.Today;
         }
 
         private void Window_PreviewKeyDown(object? sender, System.Windows.Input.KeyEventArgs e)
@@ -171,6 +266,9 @@ namespace MonAppGestion
                 RefreshShortcuts();
             }
         }
+        // Ajout douchette : si saisie rapide (scanne), ajouter direct la ligne
+        private DateTime _lastProductSearchInput = DateTime.MinValue;
+        private string _lastProductSearchText = string.Empty;
         private void txtProductSearch_KeyUp(object sender, KeyEventArgs e)
         {
             try
@@ -273,6 +371,35 @@ namespace MonAppGestion
         {
             try
             {
+                // Validation douchette ou manuelle : uniquement sur Enter
+                if (e.Key == Key.Enter)
+                {
+                    var text = txtProductSearch.Text ?? string.Empty;
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        var chosen = _allProducts.FirstOrDefault(p => string.Equals(p.Code, text, StringComparison.OrdinalIgnoreCase))
+                            ?? _allProducts.FirstOrDefault(p => string.Equals(p.Nom, text, StringComparison.OrdinalIgnoreCase));
+                        if (chosen != null)
+                        {
+                            var existing = _lines.FirstOrDefault(l => l.IdProduit == chosen.Id);
+                            if (existing != null)
+                                existing.Qte += 1;
+                            else
+                                _lines.Add(new TempDetail { IdProduit = chosen.Id, Nom = chosen.Nom, PrixVente = chosen.PrixVente, Qte = 1 });
+                            RefreshDetailsGrid();
+                        }
+                        // clear search and hide suggestions
+                        txtProductSearch.Clear();
+                        lbProductSuggestions.Visibility = Visibility.Collapsed;
+                        _selectedProduct = chosen;
+                        try { txtPrixLine.Clear(); } catch { }
+                        try { txtQteLine.Clear(); } catch { }
+                        txtProductSearch.Focus();
+                        Keyboard.Focus(txtProductSearch);
+                        e.Handled = true;
+                        return;
+                    }
+                }
                 // If user presses Escape, clear search and keep focus on the textbox
                 if (e.Key == Key.Escape)
                 {
@@ -284,7 +411,6 @@ namespace MonAppGestion
                     e.Handled = true;
                     return;
                 }
-
                 // If user presses Shift, move focus to the suggestions list (if any)
                 if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
                 {
@@ -648,7 +774,7 @@ namespace MonAppGestion
                     var vente = new Vente
                     {
                         NumVente = txtNumVente.Text,
-                        Date = dpDateVente.SelectedDate.Value,
+                        Date = GetSelectedDateTime(),
                         Versement = versement
                     };
                     // attach selected client if any
@@ -734,7 +860,8 @@ namespace MonAppGestion
             var meta = new Paragraph();
             meta.Inlines.Add(new Run($"N°: {txtNumVente.Text}") { FontWeight = FontWeights.Bold });
             meta.Inlines.Add(new LineBreak());
-            meta.Inlines.Add(new Run($"Date: {dpDateVente.SelectedDate?.ToString("g") ?? string.Empty}"));
+            var selDt = GetSelectedDateTime();
+            meta.Inlines.Add(new Run($"Date: {selDt.ToString("g")}"));
             meta.Inlines.Add(new LineBreak());
             if (cbClients.SelectedItem is MonAppGestion.Models.Client c && c.Id != 0)
             {
