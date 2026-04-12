@@ -14,8 +14,11 @@ using System.Windows.Documents;
 
 namespace MonAppGestion
 {
-    public partial class BonDeVente : Page
-    {
+        public partial class BonDeVente : Page
+        {
+            // Pour gestion douchette (scan rapide)
+            private DateTime _lastProductSearchInput = DateTime.MinValue;
+            private string _lastProductSearchText = string.Empty;
         private List<TempDetail> _lines = new List<TempDetail>();
         private List<Product> _allProducts = new List<Product>();
         private List<Client> _allClients = new List<Client>();
@@ -243,7 +246,6 @@ namespace MonAppGestion
                 {
                     lbProductSuggestions.ItemsSource = filtered;
                     lbProductSuggestions.Visibility = Visibility.Visible;
-                }
                 }
                 else
                 {
