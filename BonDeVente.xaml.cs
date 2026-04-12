@@ -186,51 +186,64 @@ namespace MonAppGestion
                     (!string.IsNullOrEmpty(p.Code) && p.Code.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)
                 ).ToList();
 
-                if (filtered.Any())
+                // Gestion douchette : détection saisie rapide (scanne)
+                var now = DateTime.Now;
+                if (_lastProductSearchText != text)
+                {
+                    _lastProductSearchInput = now;
+                    _lastProductSearchText = text;
+                }
+                bool isScanner = false;
+                if (e.Key == Key.Enter)
+                {
+                    isScanner = true;
+                }
+                else if (text.Length > 3 && (now - _lastProductSearchInput).TotalMilliseconds < 100)
+                {
+                    isScanner = true;
+                }
+
+                if (isScanner)
+                {
+                    // Recherche stricte : code ou nom exact
+                    Product? chosen = _allProducts.FirstOrDefault(p => string.Equals(p.Code, text, StringComparison.OrdinalIgnoreCase));
+                    if (chosen == null)
+                        chosen = _allProducts.FirstOrDefault(p => string.Equals(p.Nom, text, StringComparison.OrdinalIgnoreCase));
+                    if (chosen != null)
+                    {
+                        var existing = _lines.FirstOrDefault(l => l.IdProduit == chosen.Id);
+                        if (existing != null)
+                        {
+                            existing.Qte += 1;
+                        }
+                        else
+                        {
+                            var line = new TempDetail
+                            {
+                                IdProduit = chosen.Id,
+                                Nom = chosen.Nom,
+                                PrixVente = chosen.PrixVente,
+                                Qte = 1
+                            };
+                            _lines.Add(line);
+                        }
+                        RefreshDetailsGrid();
+                    }
+                    // clear search et suggestions, focus, même si pas trouvé
+                    txtProductSearch.Clear();
+                    lbProductSuggestions.Visibility = Visibility.Collapsed;
+                    _selectedProduct = chosen;
+                    try { txtPrixLine.Clear(); } catch { }
+                    try { txtQteLine.Clear(); } catch { }
+                    txtProductSearch.Focus();
+                    Keyboard.Focus(txtProductSearch);
+                    e.Handled = true;
+                }
+                else if (filtered.Any())
                 {
                     lbProductSuggestions.ItemsSource = filtered;
                     lbProductSuggestions.Visibility = Visibility.Visible;
-                    // handle navigation keys
-                    if (e.Key == Key.Enter)
-                    {
-                        // If there's an exact match by code or name, prefer it
-                        Product? chosen = null;
-                        var exact = filtered.FirstOrDefault(p => string.Equals(p.Nom, text, StringComparison.OrdinalIgnoreCase)
-                            || string.Equals(p.Code, text, StringComparison.OrdinalIgnoreCase));
-                        chosen = exact ?? filtered.FirstOrDefault();
-                        if (chosen != null)
-                        {
-                            // If product already exists in current lines, increment its quantity instead of adding a new line
-                            var existing = _lines.FirstOrDefault(l => l.IdProduit == chosen.Id);
-                            if (existing != null)
-                            {
-                                existing.Qte += 1;
-                            }
-                            else
-                            {
-                                var line = new TempDetail
-                                {
-                                    IdProduit = chosen.Id,
-                                    Nom = chosen.Nom,
-                                    PrixVente = chosen.PrixVente,
-                                    Qte = 1
-                                };
-                                _lines.Add(line);
-                            }
-                            RefreshDetailsGrid();
-                            // clear search and hide suggestions
-                            txtProductSearch.Clear();
-                            lbProductSuggestions.Visibility = Visibility.Collapsed;
-                            _selectedProduct = chosen;
-                            // leave quantity and price inputs empty for manual entry (like BonAchat behavior)
-                            try { txtPrixLine.Clear(); } catch { }
-                            try { txtQteLine.Clear(); } catch { }
-                            // After adding/incrementing, return focus to the product search box for quick next entry
-                            txtProductSearch.Focus();
-                            Keyboard.Focus(txtProductSearch);
-                            e.Handled = true;
-                        }
-                    }
+                }
                 }
                 else
                 {
