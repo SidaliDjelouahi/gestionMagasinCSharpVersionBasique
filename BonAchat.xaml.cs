@@ -24,6 +24,11 @@ namespace MonAppGestion
         private bool _versementEdited = false;
         private bool _settingVersementProgrammatically = false;
 
+        // Buffer douchette (scan rapide)
+        private string _barcodeBuffer = "";
+        private DateTime _lastBarcodeKeystroke = DateTime.Now;
+        private const int BarcodeDelay = 50; // ms
+
         public BonAchat()
         {
             InitializeComponent();
@@ -35,6 +40,79 @@ namespace MonAppGestion
             txtVersement.Text = "0.00";
             _settingVersementProgrammatically = false;
             RefreshDetailsGrid();
+            // register barcode handler on parent Window to allow global capture
+            this.Loaded += (s, e) =>
+            {
+                var w = Window.GetWindow(this);
+                if (w != null)
+                {
+                    w.PreviewKeyDown += BonAchat_PreviewKeyDown_Barcode;
+                }
+            };
+        }
+        // Gestion du buffer douchette (scan rapide)
+        private void BonAchat_PreviewKeyDown_Barcode(object? sender, KeyEventArgs e)
+        {
+            // Si le focus est dans une TextBox d'édition (hors txtProductSearch), on ignore
+            if (Keyboard.FocusedElement is TextBox tb && tb != txtProductSearch)
+                return;
+
+            // On ne traite que les touches numériques et Enter
+            if (e.Key == Key.Enter)
+            {
+                if (_barcodeBuffer.Length > 0)
+                {
+                    string code = _barcodeBuffer;
+                    _barcodeBuffer = "";
+                    Dispatcher.Invoke(() => TraiterCodeBarre(code));
+                    e.Handled = true;
+                }
+                return;
+            }
+
+            TimeSpan elapsed = DateTime.Now - _lastBarcodeKeystroke;
+            if (elapsed.TotalMilliseconds > BarcodeDelay)
+                _barcodeBuffer = ""; // Trop lent, on considère que c'est un humain
+
+            // Ajout des chiffres (clavier principal)
+            if (e.Key >= Key.D0 && e.Key <= Key.D9)
+                _barcodeBuffer += (char)('0' + (e.Key - Key.D0));
+            // Ajout des chiffres (pavé numérique)
+            else if (e.Key >= Key.NumPad0 && e.Key <= Key.NumPad9)
+                _barcodeBuffer += (char)('0' + (e.Key - Key.NumPad0));
+            // Ajoutez d'autres touches si besoin (lettres, etc.)
+
+            _lastBarcodeKeystroke = DateTime.Now;
+        }
+
+        // Traitement du code-barres scanné
+        private void TraiterCodeBarre(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return;
+            // Recherche du produit par code
+            var chosen = _allProducts.FirstOrDefault(p => string.Equals(p.Code, code, StringComparison.OrdinalIgnoreCase));
+            if (chosen != null)
+            {
+                var existing = _lines.FirstOrDefault(l => l.IdProduit == chosen.Id);
+                if (existing != null)
+                    existing.Qte += 1;
+                else
+                    _lines.Add(new TempDetail { IdProduit = chosen.Id, Nom = chosen.Nom, PrixAchat = chosen.PrixAchat, Qte = 1 });
+                RefreshDetailsGrid();
+                // Efface la recherche et suggestions
+                txtProductSearch.Clear();
+                lbProductSuggestions.Visibility = Visibility.Collapsed;
+                _selectedProduct = chosen;
+                try { txtPrixLine.Clear(); } catch { }
+                try { txtQteLine.Clear(); } catch { }
+                txtProductSearch.Focus();
+                Keyboard.Focus(txtProductSearch);
+            }
+            else
+            {
+                // Optionnel : afficher un message si le code n'est pas trouvé
+                MessageBox.Show($"Produit non trouvé pour le code : {code}");
+            }
         }
 
         private void ChargerFournisseurs()
@@ -223,6 +301,14 @@ namespace MonAppGestion
                     e.Handled = true;
                 }
             }
+            else if (e.Key == Key.Escape)
+            {
+                txtProductSearch.Clear();
+                lbProductSuggestions.Visibility = Visibility.Collapsed;
+                txtProductSearch.Focus();
+                Keyboard.Focus(txtProductSearch);
+                e.Handled = true;
+            }
         }
 
         private void lbProductSuggestions_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -258,6 +344,7 @@ namespace MonAppGestion
                 else if (e.Key == Key.Escape)
                 {
                     lbProductSuggestions.Visibility = Visibility.Collapsed;
+                    txtProductSearch.Clear();
                     txtProductSearch.Focus();
                     Keyboard.Focus(txtProductSearch);
                     e.Handled = true;
